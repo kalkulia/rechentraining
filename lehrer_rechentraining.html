@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kalkulia – Lehrerseite</title>
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: ruhiges Werkzeug für den Unterricht · IDEA: Klassenbuch des Spiels · PICTURE: Klassenliste als Hauptbild
+   COLOUR: Spiel-Weiss #f8f8f0, Tinte #1d1b26, Gold als Akzent · TYPE: Fredoka · LAYOUT: Kopf, Klassen-Einstellungen, Liste */
+:root{--ink:#1d1b26;--bg:#f8f8f0;--gold:#ffd166;--good:#2e9e5b;--bad:#d64045;--blue:#3a6ea5;--line:#d9d6c8}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:#22242e;font:16px/1.5 Fredoka,"Trebuchet MS",system-ui,sans-serif;color:var(--ink)}
+.wrap{max-width:1200px;margin:0 auto;padding:16px}
+.box{background:var(--bg);border:4px solid var(--ink);border-radius:8px;box-shadow:inset 0 0 0 3px var(--bg),inset 0 0 0 5px var(--ink);padding:18px 22px;margin-bottom:16px}
+h1{margin:0;font-size:30px;line-height:1.1}
+h2{margin:0 0 8px;font-size:20px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top .sp{flex:1}
+button,input,select{font:inherit;color:var(--ink)}
+.btn{background:#fff;border:2px solid var(--ink);border-radius:8px;padding:6px 12px;font-weight:600;cursor:pointer;min-height:40px}
+.btn:hover{background:#fff3c4}.btn:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.btn.gold{background:var(--gold)}
+.btn.sm{padding:3px 9px;min-height:34px;font-size:14px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+input[type=text],input[type=password],input[type=number]{border:2px solid var(--ink);border-radius:8px;padding:6px 10px;font-size:16px;background:#fff}
+.muted{color:#666;font-size:14px}
+.login{max-width:440px;margin:12vh auto}
+.login label{display:block;font-weight:600;margin:10px 0 4px}
+.login input{width:100%}
+.msg{min-height:1.4em;color:var(--blue);font-weight:600}
+.settings{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.settings label{display:flex;align-items:center;gap:8px;font-weight:500}
+.settings input[type=number]{width:80px}
+.tog{display:inline-flex;border:2px solid var(--ink);border-radius:8px;overflow:hidden}
+.tog button{border:0;background:#fff;padding:5px 12px;cursor:pointer;font-weight:600}
+.tog button.on{background:var(--gold)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;font-weight:600;font-size:13px;color:#555;border-bottom:2px solid var(--ink);padding:6px 8px;white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:8px;vertical-align:middle}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.s{cursor:pointer}
+tr.s:hover td{background:#fffbe9}
+.nm b{font-size:16px}.nm small{display:block;color:#666}
+.pill{display:inline-block;border:1.5px solid var(--ink);border-radius:6px;padding:0 7px;font-size:13px;font-weight:600;white-space:nowrap}
+.pill.ok{background:#b8f0c8}.pill.no{background:#ffc9c2}.pill.wait{background:#cfe3ff}.pill.off{background:#eee;color:#777}
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+tr.det td{background:#fff;padding:10px 16px}
+.err{display:grid;grid-template-columns:1fr auto auto;gap:4px 16px;font-size:14px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.err .ans{color:var(--good);font-weight:600;white-space:nowrap}
+.err .usr{color:var(--bad);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90vw}
+.toast.show{opacity:1}
+.legend{font-size:14px;color:#555;margin-top:10px}
+@media(max-width:760px){
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  tr.s{border-bottom:2px solid var(--ink);padding:8px 0}
+  td{border:0;padding:3px 4px;display:flex;justify-content:space-between;gap:12px}
+  td::before{content:attr(data-l);color:#666;font-size:13px}
+  td.nm::before,td.ac::before{content:none}
+  td.num{text-align:right}
+  .err{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+#print{display:none}
+@media print{ body{background:#fff} .wrap,.toast{display:none!important} #print{display:block!important} @page{size:A4;margin:12mm} }
+.cert{width:180mm;height:265mm;margin:0 auto;padding:6mm;border:2.5mm double #b8860b;border-radius:4mm;font-family:Arial,Helvetica,sans-serif;color:#1d1b26;-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:always;break-after:page}
+.cert .cin{height:100%;border:.6mm solid #b8860b;border-radius:2mm;padding:9mm 10mm;text-align:center;display:flex;flex-direction:column;align-items:center;background:radial-gradient(circle at 50% 0,#fff8e1,#fff 60%)}
+.ctop{letter-spacing:.3em;text-transform:uppercase;font-size:9pt;color:#8a5a00}
+.cert h1{font-family:Georgia,serif;font-size:40pt;margin:3mm 0 0;color:#8a5a00}
+.cfor{font-size:12pt;margin-top:2mm}.cname{font-family:Georgia,serif;font-size:26pt;font-weight:bold;min-height:12mm;margin-top:3mm}
+.cline{width:120mm;border-bottom:.4mm solid #1d1b26}.calias{font-size:11pt;margin-top:2mm;color:#555}.ctext{font-size:12.5pt;margin:5mm 0 4mm}
+.cstats{display:flex;gap:4mm;justify-content:center}.cstats div{border:.4mm solid #b8860b;border-radius:2mm;padding:2mm 3mm;width:36mm;background:#fff}
+.cstats b{display:block;font-size:20pt;color:#8a5a00}.cstats span{font-size:9pt}
+.cbadges{display:flex;gap:6mm;justify-content:center;margin:6mm 0 3mm}.cbadges div{width:30mm;font-size:8.5pt}.cbadges svg{width:22mm;height:22mm;display:block;margin:0 auto 1mm}
+.cteamtxt{font-size:11pt;margin-top:3mm}.cxmas{font-family:Georgia,serif;font-size:16pt;color:#a12d2d;margin-top:auto}
+.csign{display:flex;justify-content:space-between;width:100%;margin-top:8mm;font-size:10pt;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap" id="root"></div>
+<div class="toast" id="toast"></div>
+<div id="print"></div>
+<script>
+{
+const API=(window.KALKULIA_API||"").trim();
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let T=null, ROWS=[], OPEN={}, busy=false;
+try{ T=JSON.parse(sessionStorage.getItem("kalkulia_teacher")); }catch(e){}
+async function api(action,payload){ const r=await fetch(API,{method:"POST",body:JSON.stringify({action,...payload})}); return r.json(); }
+function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),3800); }
+function ago(ms){ if(!ms) return "noch nie"; const m=Math.round((Date.now()-ms)/60000); if(m<1) return "gerade eben"; if(m<60) return `vor ${m} Min.`; const h=Math.round(m/60); if(h<24) return `vor ${h} Std.`; return new Date(ms).toLocaleDateString("de-CH"); }
+
+function loginView(msg=""){
+  $("#root").innerHTML=`<div class="box login"><h1>Kalkulia</h1><p class="muted">Lehrerseite – Anmeldung wie auf der Übungsseite.</p>
+   ${API?"":`<p class="msg" style="color:var(--bad)">In config.js ist noch keine Google-Adresse eingetragen.</p>`}
+   <label for="c">Zugang</label><input id="c" type="text" autocomplete="username" placeholder="z. B. rap-emm">
+   <label for="p">Passwort</label><input id="p" type="password" autocomplete="current-password" inputmode="numeric" placeholder="TTMMJJ">
+   <p><button class="btn gold" id="go">Anmelden</button></p><p class="msg" id="m">${esc(msg)}</p></div>`;
+  $("#c").focus();
+  $("#c").onkeydown=e=>{ if(e.key==="Enter") $("#p").focus(); };
+  $("#p").onkeydown=e=>{ if(e.key==="Enter") login(); };
+  $("#go").onclick=login;
+}
+async function login(){
+  const code=$("#c").value.trim(), pw=$("#p").value.trim(); if(!code) return;
+  $("#m").textContent="Einen Moment …";
+  try{ const r=await api("tall",{code,pw}); if(!r.ok) return loginView("Zugang oder Passwort stimmt nicht.");
+    T={code,pw,name:r.teacher}; sessionStorage.setItem("kalkulia_teacher",JSON.stringify(T)); ROWS=r.rows; main(); }
+  catch(e){ loginView("Keine Verbindung zum Google-Script."); }
+}
+async function refresh(quiet){
+  if(busy) return; busy=true;
+  try{ const r=await api("tall",{code:T.code,pw:T.pw}); if(r.ok){ ROWS=r.rows; render(); if(!quiet) toast("Aktualisiert."); } else { T=null; sessionStorage.removeItem("kalkulia_teacher"); loginView("Bitte neu anmelden."); } }
+  catch(e){ toast("Keine Verbindung."); }
+  busy=false;
+}
+async function cmd(target,c,label){
+  try{ const r=await api("tcmd",{code:T.code,pw:T.pw,target,cmd:c}); toast(r.ok?`${label} – wird im Spiel übernommen, sobald das Spiel das nächste Mal speichert (spätestens nach 40 Sekunden).`:"Das hat nicht geklappt."); refresh(true); }
+  catch(e){ toast("Keine Verbindung."); }
+}
+async function setS(target,settings,label){
+  try{ const r=await api("tset",{code:T.code,pw:T.pw,target,settings}); toast(r.ok?label:"Das hat nicht geklappt."); refresh(true); }
+  catch(e){ toast("Keine Verbindung."); }
+}
+const ARENAS=[{id:"formen",short:"Formen-Arena"},{id:"einheiten",short:"Einheiten-Arena"},{id:"dreisatz",short:"Dreisatz-Arena"},{id:"champion",short:"Champion-Arena"}];
+const BNAME={formen:"Formen-Orden",einheiten:"Einheiten-Orden",dreisatz:"Dreisatz-Orden",champion:"Champion-Orden"};
+function badgeSVG(id,grey){
+  const g=grey, c=(a,b)=>g?b:a;
+  const ring=(fill,edge)=>`<circle cx="50" cy="50" r="44" fill="${c(fill,"#e9e5dc")}" stroke="${c(edge,"#c9c2b4")}" stroke-width="5"/>`;
+  let inner="";
+  if(id==="formen") inner=`<rect x="28" y="28" width="44" height="44" fill="${c("#ffd166","#d8d2c4")}" stroke="${c("#8a5a00","#bdb5a6")}" stroke-width="4" transform="rotate(45 50 50)"/><rect x="40" y="40" width="20" height="20" fill="${c("#fff3c4","#eee")}" stroke="${c("#8a5a00","#bdb5a6")}" stroke-width="3"/>`;
+  if(id==="einheiten") inner=`<circle cx="50" cy="50" r="28" fill="${c("#3a6ea5","#d8d2c4")}" stroke="${c("#1f3f66","#bdb5a6")}" stroke-width="4"/><circle cx="50" cy="50" r="9" fill="${c("#ffd166","#eee")}"/>`;
+  if(id==="dreisatz") inner=`<line x1="50" y1="26" x2="50" y2="72" stroke="${c("#1d1b26","#bdb5a6")}" stroke-width="5"/><line x1="24" y1="36" x2="76" y2="36" stroke="${c("#1d1b26","#bdb5a6")}" stroke-width="5"/><path d="M18 56 L24 38 L30 56 Z M70 56 L76 38 L82 56 Z" fill="${c("#2ec4b6","#d8d2c4")}"/>`;
+  if(id==="champion") inner=`<path d="M24 66 L20 34 L36 48 L50 26 L64 48 L80 34 L76 66 Z" fill="${c("#ffd166","#d8d2c4")}" stroke="${c("#8a5a00","#bdb5a6")}" stroke-width="4"/>`;
+  const cols={formen:["#c8961f","#8a5a00"],einheiten:["#9fd3ff","#3a6ea5"],dreisatz:["#a7f0e8","#127a70"],champion:["#ff8a80","#a12d2d"]}[id];
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${ring(cols[0],cols[1])}${inner}</svg>`;
+}
+function printCerts(){
+  const list=ROWS.filter(r=>r.played&&!r.test); if(!list.length) return toast("Noch niemand hat gespielt.");
+  const date=new Date().toLocaleDateString("de-CH",{day:"numeric",month:"long",year:"numeric"});
+  $("#print").innerHTML=list.map(r=>{ const s=r.sum||{}, tot=(s.correct||0)+(s.wrong||0), q=tot?Math.round(100*(s.correct||0)/tot):0, b=s.badgeIds||[];
+    return `<div class="cert"><div class="cin"><div class="ctop">Kalkulia · Rechentraining</div><h1>Urkunde</h1><div class="cfor">für</div><div class="cname">${esc(r.name)}</div><div class="cline"></div><div class="calias">Spielname: «${esc(s.nick||"")}»</div>
+     <p class="ctext">hat in Kalkulia mit viel Köpfchen gerechnet, gekämpft und gesammelt.</p>
+     <div class="cstats"><div><b>${s.correct||0}</b><span>Aufgaben richtig</span></div><div><b>${q}&thinsp;%</b><span>Trefferquote</span></div><div><b>${b.length}/4</b><span>Orden</span></div><div><b>${s.caught||0}</b><span>Zahlinge im Zahldex</span></div></div>
+     <div class="cbadges">${ARENAS.map(a=>`<div>${badgeSVG(a.id,!b.includes(a.id))}<span>${BNAME[a.id]}</span></div>`).join("")}</div>
+     <div class="cteamtxt">Team: ${esc((s.team||[]).join(" · "))}</div>
+     <div class="cxmas">Frohe Weihnachten und schöne Ferien!</div><div class="csign"><div>${date}</div><div>________________________<br>Lehrperson</div></div></div></div>`; }).join("");
+  setTimeout(()=>window.print(),150);
+}
+const pm=st=>st.pass===true?"errors":st.pass===false?"off":(st.pass||"always");
+function main(){
+  $("#root").innerHTML=`<div class="box"><div class="top"><h1>Kalkulia – Klasse</h1><span class="sp"></span><span class="muted" id="who"></span><button class="btn" id="rf">Aktualisieren</button><button class="btn" id="lo">Abmelden</button></div></div>
+   <div class="box"><h2>Für die ganze Klasse</h2><div class="settings" id="cls"></div><p class="legend">Gilt für alle Lernenden. Einzelne Personen kannst du unten in der Liste anpassen.</p></div>
+   <div class="box"><h2>Lernende</h2><table><thead><tr><th>Name</th><th>Zahling</th><th style="text-align:right">Münzen</th><th style="text-align:right">Orden</th><th style="text-align:right">Richtig / Falsch</th><th>Fehler</th><th>Arena</th><th>Zuletzt</th><th>Aktionen</th></tr></thead><tbody id="tb"></tbody></table>
+   <p class="legend">Klick auf eine Zeile zeigt die offenen Fehler mit den richtigen Lösungen. «Arena freigeben» drückst du, wenn dir die Person ihr verbessertes Fehlerblatt gezeigt hat: Die Arena geht auf, die ausgedruckten Fehler (plus gleiche Aufgabentypen) gelten als erledigt, und es gibt 5 Münzen pro Aufgabe.</p></div>`;
+  $("#rf").onclick=()=>refresh(false);
+  $("#lo").onclick=()=>{ sessionStorage.removeItem("kalkulia_teacher"); T=null; loginView(); };
+  render();
+}
+function render(){
+  $("#who").textContent=`Hallo ${T.name} · ${new Date().toLocaleTimeString("de-CH",{hour:"2-digit",minute:"2-digit"})}`;
+  const st=(ROWS.find(r=>!r.test)||{settings:{timer:false,secs:60,pass:"always",maxOpen:5,finale:false}}).settings;
+  $("#cls").innerHTML=`<label>Timer <span class="tog"><button data-ct="0" class="${st.timer?"":"on"}">Aus</button><button data-ct="1" class="${st.timer?"on":""}">Ein</button></span></label>
+   <label>Sekunden pro Aufgabe <input type="number" id="cs" min="10" max="180" step="5" value="${st.secs}"></label>
+   <label>Arena <select id="cp" style="border:2px solid var(--ink);border-radius:8px;padding:6px 8px;background:#fff">${[["always","nur mit meiner Freigabe"],["errors","Freigabe nur bei zu vielen Fehlern"],["off","immer offen"]].map(([v,t])=>`<option value="${v}" ${pm(st)===v?"selected":""}>${t}</option>`).join("")}</select></label>
+   <label>Erlaubte offene Fehler <input type="number" id="cm" min="0" max="30" value="${st.maxOpen}"></label>
+   <button class="btn gold" id="capply">Für alle übernehmen</button>
+   <span style="flex-basis:100%;height:0"></span>
+   <label>Weihnachtsfinale <span class="pill ${st.finale?"ok":"off"}">${st.finale?"freigegeben":"noch gesperrt"}</span></label>
+   <button class="btn" id="cfin">${st.finale?"Finale wieder sperren":"Weihnachtsfinale für alle freigeben"}</button>
+   <button class="btn" id="ccert">Alle Urkunden drucken</button>`;
+  $("#cfin").onclick=()=>setS("ALLE",{finale:!st.finale},st.finale?"Weihnachtsfinale gesperrt.":"Weihnachtsfinale freigegeben! Alle bekommen beim nächsten Speichern die Meldung.");
+  $("#ccert").onclick=printCerts;
+  $("#cls").querySelectorAll("[data-ct]").forEach(b=>b.onclick=()=>{ $("#cls").querySelectorAll("[data-ct]").forEach(x=>x.classList.toggle("on",x===b)); });
+  $("#capply").onclick=()=>setS("ALLE",{timer:$("#cls [data-ct='1']").classList.contains("on"),secs:Math.max(10,Math.min(180,+$("#cs").value||60)),pass:$("#cp").value,maxOpen:Math.max(0,Math.min(30,+$("#cm").value||0))},"Einstellungen für alle gespeichert.");
+  $("#tb").innerHTML=ROWS.map(r=>{
+    const s=r.sum||{}, set=r.settings, open=s.open||0, pr=s.printed||0;
+    const bIds=s.badgeIds||[], nextA=ARENAS.find(a=>!bIds.includes(a.id))||ARENAS[0], badge=bIds.includes(nextA.id), unl=(s.unlocked||[]).includes(nextA.id), mode=pm(set);
+    const arena=!r.played?'<span class="pill off">–</span>':badge?'<span class="pill ok">alle Orden ✓</span>':`<small>${nextA.short}:</small> `+(unl?'<span class="pill ok">freigegeben</span>':(mode==="off"||(mode==="errors"&&open<=set.maxOpen))?'<span class="pill ok">offen</span>':'<span class="pill no">gesperrt</span>')+(bIds.length?`<br><small>${bIds.length} Orden</small>`:"");
+    const det=OPEN[r.code]?`<tr class="det"><td colspan="9">${(s.errs||[]).length?(s.errs||[]).map(e=>`<div class="err"><span>${esc(e.txt)}${e.printed?' <span class="pill wait">gedruckt</span>':""}</span><span class="usr">Antwort: ${esc(e.user)}</span><span class="ans">Lösung: ${esc(e.ans)}</span></div>`).join(""):'<span class="muted">Keine offenen Fehler.</span>'}${s.team&&s.team.length?`<p class="muted">Team: ${esc(s.team.join(", "))}</p>`:""}</td></tr>`:"";
+    return `<tr class="s" data-c="${r.code}"><td class="nm"><b>${esc(r.name)}</b><small>${r.played?esc(s.nick||"")+" · "+r.code:r.code+" · noch nicht gespielt"}</small></td>
+     <td data-l="Zahling">${r.played?`${esc(s.mon)} Lv. ${s.lvl}`:"–"}</td><td class="num" data-l="Münzen">${r.played?s.coins:"–"}</td><td class="num" data-l="Orden">${r.played?s.badges:"–"}</td>
+     <td class="num" data-l="Richtig / Falsch">${r.played?`${s.correct} / ${s.wrong}`:"–"}</td>
+     <td data-l="Fehler">${r.played?`${open} offen${pr?` · <span class="pill wait">${pr} gedruckt</span>`:""}`:"–"}</td>
+     <td data-l="Arena">${arena}</td><td data-l="Zuletzt">${ago(r.last)}${r.pending?` <span class="pill wait">${r.pending} wartet</span>`:""}</td>
+     <td class="ac"><div class="acts"><button class="btn sm gold" data-a="unlock" ${badge||unl?"disabled":""} title="Verbessertes Blatt gesehen: Arena freigeben und gedruckte Fehler erledigen">${nextA.short} freigeben</button><button class="btn sm" data-a="all" ${open?"":"disabled"}>Alle Fehler erledigen</button><button class="btn sm" data-a="coins">+20 Münzen</button><button class="btn sm" data-a="timer">Timer ${set.timer?"aus":"ein"}</button></div></td></tr>${det}`;
+  }).join("");
+  $("#tb").querySelectorAll("tr.s").forEach(tr=>tr.onclick=e=>{
+    const code=tr.dataset.c, r=ROWS.find(x=>x.code===code), b=e.target.closest("[data-a]");
+    if(!b){ OPEN[code]=!OPEN[code]; render(); return; }
+    e.stopPropagation(); const n=r.name.split(" ")[0];
+    if(b.dataset.a==="unlock"){ const bi=(r.sum||{}).badgeIds||[], na=ARENAS.find(a=>!bi.includes(a.id))||ARENAS[0]; cmd(code,{type:"unlock",arena:na.id},`${na.short} für ${n} freigegeben`); }
+    if(b.dataset.a==="all") cmd(code,{type:"stamp",mode:"all"},`Alle Fehler von ${n} erledigt`);
+    if(b.dataset.a==="coins") cmd(code,{type:"coins",n:20},`${n} bekommt 20 Münzen`);
+    if(b.dataset.a==="timer") setS(code,{timer:!r.settings.timer},`Timer für ${n} ${r.settings.timer?"aus":"ein"}geschaltet.`);
+  });
+}
+setInterval(()=>{ if(T&&document.visibilityState==="visible") refresh(true); },30000);
+if(T){ $("#root").innerHTML='<div class="box">Lade die Klasse …</div>'; api("tall",{code:T.code,pw:T.pw}).then(r=>{ if(r.ok){ ROWS=r.rows; main(); } else loginView("Bitte neu anmelden."); }).catch(()=>loginView("Keine Verbindung zum Google-Script.")); } else loginView();
+}
+</script>
+</body>
+</html>
