@@ -214,7 +214,10 @@ table.gt td.na{background:#f0f0f0}
 .rc.s2 .rcd,.rc.s3 .rcn,.rc.s3 .rcm{opacity:1}.rc.s3 .rcn{transform:none}
 .rcm .tg{animation:rcpulse .7s ease-in-out infinite alternate}
 @keyframes rcpulse{to{r:9}}
-#trip{z-index:8;background:#000}#trip{z-index:8;background:#000}
+#trip{z-index:8;background:#000}
+.hs{display:flex;gap:1em;align-items:flex-start}.hsf{width:11em;flex:none}.hsf svg{width:100%}.hl{font-size:1.25em;font-weight:600;background:#fff;border:.12em solid var(--ink);border-radius:.3em;padding:.15em .5em;margin:.25em 0;display:inline-block;margin-right:.4em}
+.hgrid{flex-direction:row;flex-wrap:wrap}.hgrid .btn{flex:1 1 30%}
+#print .hs{display:flex;gap:20px}#print .hsf{width:200px}#print .hl{font-size:16pt;border:1px solid #000;padding:4px 8px;margin:4px 6px 4px 0;display:inline-block}#trip{z-index:8;background:#000}
 #tripC{width:100%;height:100%;image-rendering:pixelated}
 #tripCap{position:absolute;left:50%;top:8%;transform:translateX(-50%);background:var(--gb);border:.25em solid var(--ink);border-radius:.45em;padding:.3em 1.2em;font-size:1.4em;font-weight:700;white-space:nowrap;opacity:0}
 #tripCap.show{animation:banner 4s}
@@ -814,6 +817,7 @@ if(!ONLINE) load();
 /* ---------- Welt ---------- */
 const TS=16,VW=15,VH=11,SCALE=3;
 let MW=30,MH=34,map=[],BUILD=[],NPCS=[],doorAt={},AREA=null;
+let NIGHTLV=0, SNOW0=0, DARK=null, LAMPS=[], ROOM=null, OBJS=[];
 const fill=(x0,y0,x1,y1,c)=>{ for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) map[y][x]=c; };
 function mkMap(W,H){ MW=W; MH=H; map=[]; for(let y=0;y<H;y++) map.push(Array(W).fill(".")); fill(0,0,W-1,1,"T"); fill(0,H-2,W-1,H-1,"T"); fill(0,0,1,H-1,"T"); fill(W-2,0,W-1,H-1,"T"); }
 const POLY=look({hair:"kurz",hairC:"#bdbdbd",skin:"#ffe0c2",topC:"#f8f8f0",pants:"#3a3a3a",glasses:"nerd",glassC:"#1d1b26"});
@@ -965,9 +969,21 @@ function loadArea(id){
   AREA=AREAS[id]; AREA.id=id; AREA.build();
   doorAt={}; BUILD.forEach(b=>{ fill(b.x,b.y,b.x+b.w-1,b.y+b.h-1,"B"); b.doors.forEach(([x,y])=>doorAt[x+","+y]=b.id); });
   BUILD.forEach(b=>b.doors.forEach(([x,y])=>{ if(map[y+1]&&map[y+1][x]!=="~") map[y+1][x]=AREA.snow?":":"="; }));
+  placeLamps();
+}
+function placeLamps(){
+  LAMPS=[]; const ground=new Set([".","_","*"]), path=new Set(["=",":"]), near=(x,y,r)=>NPCS.some(n=>Math.abs(n.x-x)+Math.abs(n.y-y)<=r)||(AREA.exits||[]).some(e=>Math.abs(e.x-x)+Math.abs(e.y-y)<=2)||Object.keys(doorAt).some(k=>{ const [a,b]=k.split(",").map(Number); return Math.abs(a-x)+Math.abs(b-y)<=2; });
+  for(let y=2;y<MH-2;y++) for(let x=2;x<MW-2;x++){
+    if(!ground.has(map[y][x])) continue;
+    const nb=[[1,0],[-1,0],[0,1],[0,-1]].map(([a,b])=>map[y+b][x+a]); if(!nb.some(c=>path.has(c))) continue;
+    if(nb.filter(c=>path.has(c)).length>1) continue;
+    if(near(x,y,1)||LAMPS.some(([a,b])=>Math.abs(a-x)+Math.abs(b-y)<7)) continue;
+    if((S.pos&&S.pos.x===x&&S.pos.y===y)) continue;
+    map[y][x]="L"; LAMPS.push([x,y]);
+  }
 }
 const npcAt=(x,y)=>NPCS.find(n=>n.x===x&&n.y===y);
-const SOLID=new Set(["T","~","B","X","s","W","P","Y","N","R","K"]);
+const SOLID=new Set(["T","~","B","X","s","W","P","Y","N","R","K","|","o","L"]);
 const blocked=(x,y)=>x<0||y<0||x>=MW||y>=MH||SOLID.has(map[y][x])||!!npcAt(x,y);
 loadArea(AREAS[S.pos.area]?S.pos.area:"dorf");
 
@@ -1016,7 +1032,9 @@ function charURL(L,dir="down"){ const c=document.createElement("canvas"); c.widt
 
 /* ---------- Kacheln & Gebäude ---------- */
 const hash=(x,y)=>((x*73856093)^(y*19349663))>>>0;
-function grass(c,sx,sy,x,y){ px(c,"#7ec850",sx,sy,16,16); const h=hash(x,y); px(c,"#6db542",sx+(h%13),sy+((h>>4)%13),1,2); px(c,"#6db542",sx+((h>>8)%13),sy+((h>>12)%13),1,2); px(c,"#93d966",sx+((h>>16)%13),sy+((h>>20)%13),1,1); }
+let XK=0;
+function grass(c,sx,sy,x,y){ px(c,"#7ec850",sx,sy,16,16); const h=hash(x,y); px(c,"#6db542",sx+(h%13),sy+((h>>4)%13),1,2); px(c,"#6db542",sx+((h>>8)%13),sy+((h>>12)%13),1,2); px(c,"#93d966",sx+((h>>16)%13),sy+((h>>20)%13),1,1);
+  if(XK>0){ c.globalAlpha=.93*XK; px(c,"#f4f8ff",sx,sy,16,16); c.globalAlpha=1; if(XK>.6&&h%3===0) px(c,"#dce7f5",sx+(h%12),sy+((h>>7)%12),3,1); } }
 function drawTile(c,ch,x,y,sx,sy,t){
   switch(ch){
     case ".": case "B": grass(c,sx,sy,x,y); break;
@@ -1031,6 +1049,12 @@ function drawTile(c,ch,x,y,sx,sy,t){
       const on=Math.floor(t/400)%2; [[4,10,"#d64045"],[11,9,"#4cc9f0"],[6,5,"#ffd166"],[10,4,"#d64045"],[7,0,"#4cc9f0"],[3,11,"#ffd166"],[12,11,"#d64045"]].forEach(([a,b,col],i)=>{ if((i+on)%2) px(c,col,sx+a,sy+b,1,1); else px(c,"#fff",sx+a,sy+b,1,1); });
       px(c,"#d64045",sx+12,sy+12,3,3); px(c,"#ffd166",sx+13,sy+12,1,3); px(c,"#3a6ea5",sx,sy+13,3,2); break; }
     case "P": { px(c,"#4aa3df",sx,sy,16,16); break; }
+    case "|": { const R=ROOM?roomPal():{wall:"#ccc",trim:"#888"}, wh=ROOM?ROOM.wh:2; if(y<wh&&x>0&&x<MW-1){ px(c,R.wall,sx,sy,16,16); if(y===0){ px(c,R.trim,sx,sy,16,5); px(c,"rgba(0,0,0,.15)",sx,sy+5,16,1); } else if(y===wh-1) { px(c,"rgba(0,0,0,.12)",sx,sy+13,16,3); } if(R.pat&&y>0) px(c,R.pat,sx+(x%2?3:11),sy+(y%2?4:10),2,2); } else { px(c,"#2b2636",sx,sy,16,16); px(c,"#3b3347",sx+1,sy+1,14,14); } break; }
+    case ",": case "o": { const R=ROOM?roomPal():{f1:"#ddd",f2:"#ccc"}; px(c,(x+y)%2?R.f1:R.f2,sx,sy,16,16); px(c,"rgba(0,0,0,.06)",sx,sy+15,16,1); break; }
+    case "M": { const R=ROOM?roomPal():{f1:"#ddd"}; px(c,R.f1,sx,sy,16,16); px(c,"#a8302f",sx+1,sy+2,14,12); px(c,"#c0504d",sx+3,sy+4,10,8); break; }
+    case "L": { drawTile(c,AREA.snow?"*":AREA.id==="insel"?"_":".",x,y,sx,sy,t); const fl=Math.sin(t/120+x*3)*.5+.5;
+      if(AREA.id==="insel"){ px(c,"#6b4f3a",sx+7,sy+5,2,11); px(c,"#8b6440",sx+6,sy+4,4,2); px(c,"#ff9f1c",sx+6,sy+1-Math.round(fl),4,4); px(c,"#ffd166",sx+7,sy+2,2,2); }
+      else { px(c,"rgba(0,0,0,.18)",sx+4,sy+14,8,2); px(c,"#3a3a3a",sx+7,sy+4,2,11); px(c,"#3a3a3a",sx+5,sy+14,6,2); px(c,"#3a3a3a",sx+5,sy,6,1); px(c,NIGHTLV>.1?"#ffe08a":"#e8eef7",sx+5,sy+1,6,4); px(c,"#3a3a3a",sx+5,sy+5,6,1); } break; }
     case "*": { px(c,"#eef4fc",sx,sy,16,16); const h=hash(x,y); px(c,"#d6e3f3",sx+(h%14),sy+((h>>5)%14),2,1); px(c,"#fff",sx+((h>>9)%14),sy+((h>>13)%14),1,1); break; }
     case ":": { px(c,"#cfdbe9",sx,sy,16,16); const h=hash(x,y); px(c,"#b9c8da",sx+(h%14),sy+((h>>5)%14),2,1); px(c,"#e3ebf5",sx+((h>>9)%14),sy+((h>>13)%14),2,1); break; }
     case ";": { px(c,"#eef4fc",sx,sy,16,16); for(let i=0;i<4;i++){ const ox=(i%2)*8, oy=Math.floor(i/2)*8; px(c,"#3f8f3a",sx+ox+1,sy+oy+3,6,4); px(c,"#2f7a3a",sx+ox+2,sy+oy+6,4,2); px(c,"#fff",sx+ox+1,sy+oy+2,6,2); } break; }
@@ -1048,7 +1072,7 @@ function drawBuilding(c,b,cx,cy){
   const X=b.x*TS-cx, Y=b.y*TS-cy, W=b.w*TS, H=b.h*TS, rH=Math.floor(H*.48), mid=doorMid(b)-cx;
   px(c,"rgba(0,0,0,.2)",X+2,Y+H-1,W,3); px(c,b.wall,X,Y+rH,W,H-rH); px(c,DK,X,Y+rH,W,1);
   px(c,b.roof,X-2,Y-1,W+4,rH+1); for(let i=0;i<W+4;i+=4) px(c,"rgba(0,0,0,.12)",X-2+i,Y+2,2,rH-3); px(c,"rgba(255,255,255,.25)",X-2,Y-1,W+4,2);
-  const wy=Y+rH+4; for(let wx=X+4; wx<X+W-8; wx+=16){ if(Math.abs(wx+4-mid)<27) continue; px(c,DK,wx,wy,8,7); px(c,"#9fd3ff",wx+1,wy+1,6,5); px(c,"#fff",wx+1,wy+1,2,2); }
+  const wy=Y+rH+4; for(let wx=X+4; wx<X+W-8; wx+=16){ if(Math.abs(wx+4-mid)<27) continue; px(c,DK,wx,wy,8,7); px(c,NIGHTLV>.2?"#ffd98a":"#9fd3ff",wx+1,wy+1,6,5); px(c,NIGHTLV>.2?"#fff3c4":"#fff",wx+1,wy+1,2,2); }
   b.doors.forEach(([dx,dy])=>{ const DX=dx*TS-cx, DY=dy*TS-cy; px(c,DK,DX+3,DY+3,10,13);
     const o=DOORA&&DOORA.x===dx&&DOORA.y===dy?DOORA.o:0;
     if(o>0){ px(c,"#2a1d14",DX+4,DY+4,8,12); px(c,"rgba(255,220,150,.35)",DX+4,DY+12,8,4); const w=Math.max(1,Math.round(8*(1-o))); px(c,"#7a4b2a",DX+4,DY+4,w,12); px(c,"#5a3518",DX+4+w-1,DY+4,1,12); }
@@ -1078,26 +1102,31 @@ function tryMove(dir){
 }
 let lastSave=0;
 function onStep(){
+  if(ROOM){ if(map[P.y][P.x]==="M") leaveRoom(); return; }
   S.pos={x:P.x,y:P.y,dir:P.dir,area:AREA.id};
   const ex=(AREA.exits||[]).find(e=>e.x===P.x&&e.y===P.y); if(ex){ changeArea(ex.to,ex.tx,ex.ty,ex.dir); return; }
   if(performance.now()-lastSave>2000){ save(); lastSave=performance.now(); }
   for(const n of NPCS){ if(!n.trainer||S.beaten[n.id]) continue; const [dx,dy]=DIRS[n.dir];
+    if(FLED.has(n.id)) continue;
     for(let i=1;i<=3;i++){ if(P.x===n.x+dx*i&&P.y===n.y+dy*i){ trainerSpots(n); return; } if(blocked(n.x+dx*i,n.y+dy*i)) break; } }
   if((map[P.y][P.x]==='"'||map[P.y][P.x]===";") && Math.random()<.13) wildEncounter();
 }
 async function changeArea(id,x,y,dir){
-  clearKeys(); mode="cut"; INSIDE=null;
+  clearKeys(); mode="cut"; INSIDE=null; ROOM=null;
   await regionCard(id);
   S.pos={x,y,dir,area:id}; placePlayer(); save();
   await regionCardOut(); mode="world";
 }
+const FLED=new Set();
 function trainerSpots(n){
   clearKeys(); mode="cut"; exclaim={n}; P.dir=opp(n.dir);
-  setTimeout(()=>{ exclaim=null; say(n.name,n.intro,()=>startBattle({kind:"trainer",trainer:n.name,short:n.short,tlook:n.look,say:n.say,after:n.after,...structuredClone(n.battle),onWin:()=>{ S.beaten[n.id]=true; }})); },750);
+  setTimeout(()=>{ exclaim=null; say(n.name,n.intro,()=>startBattle({kind:"trainer",trainer:n.name,short:n.short,tlook:n.look,say:n.say,after:n.after,...structuredClone(n.battle),tid:n.id,onWin:()=>{ S.beaten[n.id]=true; FLED.delete(n.id); }})); },750);
 }
 function interact(){
   const [dx,dy]=DIRS[P.dir], tx=P.x+dx, ty=P.y+dy, n=npcAt(tx,ty);
-  if(n){ n.dir=opp(P.dir); if(n.act){ n.act(); return; } if(n.trainer){ if(S.beaten[n.id]) say(n.name,[n.after]); else trainerSpots(n); } else say(n.name,n.lines); return; }
+  if(ROOM&&!n){ const k=ROOM.cats&&ROOM.cats.find(k=>Math.round(k.x)===tx&&Math.round(k.y)===ty&&k.z>-6); if(k) return say(k.name,[pick(k.state==="sleep"?[`Zzz … ${k.name} schläft tief und fest. Pssst!`,`${k.name} schnurrt im Schlaf.`]:[`Miau! ${k.name} reibt sich an deinem Bein.`,`Prrr … ${k.name} lässt sich streicheln.`,`${k.name} schaut dich an und blinzelt langsam. Das heisst: Sie mag dich!`])]);
+    const o=OBJS.find(o=>o.act&&tx>=o.x&&tx<o.x+o.w&&ty>=o.y&&ty<o.y+o.h); if(o) o.act(); return; }
+  if(n){ n.dir=opp(P.dir); if(n.act){ n.act(); return; } if(n.trainer){ if(S.beaten[n.id]) say(n.name,[n.after]); else { FLED.delete(n.id); trainerSpots(n); } } else say(n.name,n.lines); return; }
   if(map[ty]&&map[ty][tx]==="s") say("Wegweiser",AREA.sign||["Kalkulia"]);
   else if(map[ty]&&map[ty][tx]==="W") xmasTree();
   else if(map[ty]&&map[ty][tx]==="P") boatAsk(AREA.id==="insel"?"tal":"insel");
@@ -1114,23 +1143,51 @@ function loop(t){
   if(mode!=="battle") render(t);
   requestAnimationFrame(loop);
 }
+const XMAS=()=>!!(S.settings&&S.settings.finale)||!!(S.flags&&(S.flags.champion||S.flags.finaleDone));
+function nightLevel(){ const m=(S.flags&&S.flags.tod)||"tag"; if(m==="auto"){ const d=new Date(), h=d.getHours()+d.getMinutes()/60; return h>=21||h<6?.7:h>=18.5||h<7.5?.35:0; } return {tag:0,abend:.35,nacht:.7}[m]||0; }
+function drawNight(lv,cx,cy,t,pxp,pyp){
+  if(!DARK){ DARK=document.createElement("canvas"); DARK.width=VW*TS; DARK.height=VH*TS; }
+  const d=DARK.getContext("2d"); d.globalCompositeOperation="source-over"; d.clearRect(0,0,DARK.width,DARK.height); d.fillStyle=`rgba(8,14,44,${lv})`; d.fillRect(0,0,DARK.width,DARK.height);
+  d.globalCompositeOperation="destination-out";
+  const hole=(x,y,r,a)=>{ if(x<-r||y<-r||x>DARK.width+r||y>DARK.height+r) return; const g=d.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,`rgba(0,0,0,${a})`); g.addColorStop(.6,`rgba(0,0,0,${a*.6})`); g.addColorStop(1,"rgba(0,0,0,0)"); d.fillStyle=g; d.beginPath(); d.arc(x,y,r,0,7); d.fill(); };
+  LAMPS.forEach(([x,y])=>hole(x*TS-cx+8,y*TS-cy+3,36+Math.sin(t/150+x)*2,.95));
+  BUILD.forEach(b=>{ hole(doorMid(b)-cx,(b.y+b.h)*TS-cy-2,18,.8); hole(b.x*TS-cx+b.w*TS/2,(b.y+b.h*.7)*TS-cy,b.w*5,.45); });
+  hole(pxp-cx+8,pyp-cy+8,22,.5);
+  ctx.drawImage(DARK,0,0);
+  ctx.globalCompositeOperation="lighter";
+  LAMPS.forEach(([x,y])=>{ const X=x*TS-cx+8, Y=y*TS-cy+3; if(X<-40||Y<-40||X>280||Y>220) return; const g=ctx.createRadialGradient(X,Y,0,X,Y,30); g.addColorStop(0,`rgba(255,180,80,${.22*lv/.62})`); g.addColorStop(1,"rgba(255,180,80,0)"); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(X,Y,30,0,7); ctx.fill(); });
+  ctx.globalCompositeOperation="source-over";
+}
 function render(t){
   if(INSIDE) return drawRoom(INSIDE.id,t);
+  NIGHTLV=ROOM?0:nightLevel();
+  XK=!ROOM&&AREA&&!AREA.snow&&XMAS()?(SNOW0||(SNOW0=t),Math.min(1,(t-SNOW0)/9000)):0;
   const pxp=(P.moving?P.fx+(P.x-P.fx)*P.prog:P.x)*TS, pyp=(P.moving?P.fy+(P.y-P.fy)*P.prog:P.y)*TS;
   let cx=Math.round(pxp+8-VW*TS/2), cy=Math.round(pyp+8-VH*TS/2);
   cx=Math.max(0,Math.min(MW*TS-VW*TS,cx)); cy=Math.max(0,Math.min(MH*TS-VH*TS,cy));
   ctx.setTransform(SCALE,0,0,SCALE,0,0); ctx.imageSmoothingEnabled=false;
   const x0=Math.floor(cx/TS), y0=Math.floor(cy/TS);
   for(let y=y0;y<=y0+VH;y++) for(let x=x0;x<=x0+VW;x++) if(y<MH&&x<MW) drawTile(ctx,map[y][x],x,y,x*TS-cx,y*TS-cy,t);
+  const xk=XK;
+  if(xk>0){ const SA={'"':.75,"T":.65,"_":.8,"=":.6,"Y":.55,"W":.4};
+    for(let y=y0;y<=y0+VH;y++) for(let x=x0;x<=x0+VW;x++){ if(y>=MH||x>=MW) continue; const ch=map[y][x], a=SA[ch]; if(!a) continue; const sx=x*TS-cx, sy=y*TS-cy; ctx.globalAlpha=a*xk;
+      if(ch==="T"||ch==="Y"||ch==="W") { px(ctx,"#f4f8ff",sx+2,sy,12,4); px(ctx,"#f4f8ff",sx+1,sy+6,14,3); } else if(ch==='"') { px(ctx,"#f4f8ff",sx,sy,16,9); } else if(ch==="L"||ch==="s") { px(ctx,"#f4f8ff",sx,sy+12,16,4); } else px(ctx,"#f4f8ff",sx,sy,16,16);
+      ctx.globalAlpha=1; } }
   BUILD.forEach(b=>drawBuilding(ctx,b,cx,cy));
-  if(AREA.boat){ const bx=AREA.boat.x*TS-cx, by=AREA.boat.y*TS-cy+Math.round(Math.sin(t/500)); px(ctx,"#6b4f3a",bx+1,by+8,30,6); px(ctx,"#8b6440",bx+3,by+6,26,3); px(ctx,"#f8f8f0",bx+2,by+10,28,1); px(ctx,DK,bx+14,by-14,2,20); px(ctx,"#f8f8f0",bx+16,by-12,10,12); px(ctx,"#d64045",bx+16,by-12,10,2); px(ctx,"#8fd0f5",bx+5,by+14,24,1); }
-  if(AREA.train){ const tx=AREA.train.x*TS-cx, ty=AREA.train.y*TS-cy; px(ctx,DK,tx-1,ty-1,18,26); px(ctx,"#d64045",tx,ty,16,24); px(ctx,"#9fd3ff",tx+2,ty+3,12,6); px(ctx,"#9fd3ff",tx+2,ty+12,12,5); px(ctx,"#ffd166",tx,ty+20,16,2); px(ctx,"#fff",tx+3,ty+4,3,2); }
+  if(xk>0){ ctx.globalAlpha=xk; BUILD.forEach(b=>{ const X=b.x*TS-cx, Y=b.y*TS-cy; px(ctx,"#f4f8ff",X-2,Y-2,b.w*TS+4,5); px(ctx,"#f4f8ff",X+3,Y+3,b.w*TS-6,2); }); ctx.globalAlpha=1; }
+  if(ROOM) OBJS.forEach(o=>o.draw&&o.draw(ctx,o.x*TS-cx,o.y*TS-cy));
+  if(AREA.boat&&!ROOM){ const bx=AREA.boat.x*TS-cx, by=AREA.boat.y*TS-cy+Math.round(Math.sin(t/500)); px(ctx,"#6b4f3a",bx+1,by+8,30,6); px(ctx,"#8b6440",bx+3,by+6,26,3); px(ctx,"#f8f8f0",bx+2,by+10,28,1); px(ctx,DK,bx+14,by-14,2,20); px(ctx,"#f8f8f0",bx+16,by-12,10,12); px(ctx,"#d64045",bx+16,by-12,10,2); px(ctx,"#8fd0f5",bx+5,by+14,24,1); }
+  if(AREA.train&&!ROOM){ const tx=AREA.train.x*TS-cx, ty=AREA.train.y*TS-cy; px(ctx,DK,tx-1,ty-1,18,26); px(ctx,"#d64045",tx,ty,16,24); px(ctx,"#9fd3ff",tx+2,ty+3,12,6); px(ctx,"#9fd3ff",tx+2,ty+12,12,5); px(ctx,"#ffd166",tx,ty+20,16,2); px(ctx,"#fff",tx+3,ty+4,3,2); }
   const step=P.moving?(Math.floor(P.walk*2)%2?1:2):0;
-  const ents=NPCS.map(n=>({y:n.y,d:()=>drawChar(ctx,n.x*TS-cx,n.y*TS-cy,n.look,n.dir,0)}));
+  if(ROOM&&ROOM.tick) ROOM.tick(t);
+  const ents=NPCS.map(n=>({y:n.y,d:()=>{ const X=n.x*TS-cx+(n.ox||0), Y=n.y*TS-cy+(n.oy||0); if(n.sx){ ctx.save(); ctx.translate(X+8,Y); ctx.scale(n.sx,1); drawChar(ctx,-8,0,n.look,n.dir,0); ctx.restore(); } else drawChar(ctx,X,Y,n.look,n.dir,0); if(n.bubble) { px(ctx,DK,X+4,Y-12,9,10); px(ctx,"#fff",X+5,Y-11,7,8); ctx.fillStyle="#3a6ea5"; ctx.font="bold 7px Arial"; ctx.textAlign="center"; ctx.fillText(n.bubble,X+8.5,Y-4.5); } }}));
+  if(ROOM&&ROOM.cats) ROOM.cats.forEach(k=>ents.push({y:k.y+(k.z<-6?-.5:0),d:()=>drawCat(ctx,k,cx,cy,t)}));
+  if(ROOM&&ROOM.fx) ROOM.fx.forEach(f=>ents.push({y:99,d:()=>f(ctx,cx,cy,t)}));
   ents.push({y:pyp/TS,d:()=>{ if(WALKIN) ctx.globalAlpha=Math.max(0,1-P.prog*1.1); drawChar(ctx,Math.round(pxp-cx),Math.round(pyp-cy),S.look,P.dir,step); ctx.globalAlpha=1; }});
   ents.sort((a,b)=>a.y-b.y).forEach(e=>e.d());
   if(exclaim){ const X=exclaim.n.x*TS-cx+5, Y=exclaim.n.y*TS-cy-11; px(ctx,DK,X-1,Y-1,8,10); px(ctx,"#fff",X,Y,6,8); px(ctx,"#d64045",X+2,Y+1,2,4); px(ctx,"#d64045",X+2,Y+6,2,1); }
-  if(AREA.snow){ for(let i=0;i<40;i++){ const sx=((i*53.7+t*.012*(1+i%3))%250)-5, sy=((i*37.3+t*.03*(1+i%2))%186)-5; px(ctx,"#fff",Math.round(sx),Math.round(sy),i%4?1:2,i%4?1:2); } }
+  if(NIGHTLV>0) drawNight(NIGHTLV,cx,cy,t,pxp,pyp);
+  if(!ROOM&&(AREA.snow||xk>0)){ for(let i=0;i<(AREA.snow?40:70);i++){ const sx=((i*53.7+t*.012*(1+i%3))%250)-5, sy=((i*37.3+t*.03*(1+i%2))%186)-5; px(ctx,"#fff",Math.round(sx),Math.round(sy),i%4?1:2,i%4?1:2); } }
   // Schilder über den Türen
   ctx.setTransform(1,0,0,1,0,0); ctx.font='600 15px Fredoka, "Trebuchet MS", sans-serif'; ctx.textAlign="center"; ctx.textBaseline="middle";
   BUILD.forEach(b=>{ const X=(doorMid(b)-cx)*SCALE, Y=(b.doors[0][1]*TS+3-cy)*SCALE-15, w=ctx.measureText(b.name).width+14;
@@ -1165,7 +1222,7 @@ function navItems(){ return [...PW.querySelectorAll("[data-act]")].filter(el=>!e
 function setCur(i){ const it=navItems(); PW.querySelectorAll(".cur").forEach(e=>e.classList.remove("cur")); if(!it.length) return; curIdx=(i+it.length)%it.length; it[curIdx].classList.add("cur"); it[curIdx].scrollIntoView({block:"nearest"}); if(panelOpts.name) lastIdx[panelOpts.name]=curIdx; }
 function openPanel(html,opts={}){
   clearKeys(); panelOpts=opts; mode="panel";
-  PW.innerHTML=`<div class="panel gb">${html}${opts.nohelp?"":KEYHELP}</div>`; PW.classList.toggle("inroom",!!INSIDE); PW.classList.add("show");
+  PW.innerHTML=`<div class="panel gb">${html}${opts.nohelp?"":KEYHELP}</div>`; PW.classList.toggle("inroom",!!ROOM); PW.classList.add("show");
   PW.onclick=e=>{ const b=e.target.closest("[data-act]"); if(!b||b.disabled) return; const it=navItems(), i=it.indexOf(b); if(i>=0) setCur(i); opts.onAct&&opts.onAct(b.dataset.act,b,0); };
   opts.onMount&&opts.onMount(PW);
   if(!opts.noNav) setCur(opts.name&&lastIdx[opts.name]!=null?lastIdx[opts.name]:0);
@@ -1294,9 +1351,9 @@ async function enterBuilding(id){
   WALKIN=true; P.fx=P.x; P.fy=P.y; P.x=d[0]; P.y=d[1]; P.moving=true; P.prog=0;
   await tween(260,k=>{ P.prog=k; P.walk+=.08; });
   await fadeTo(true,160);
-  WALKIN=false; P.moving=false; P.x=out.x; P.y=out.y; P.fx=P.x; P.fy=P.y; DOORA=null; INSIDE={id,out,door:d}; ROOMT=performance.now();
+  WALKIN=false; DOORA=null; enterRoomDirect(id,out,d);
   await sleep(140); await fadeTo(false,180); $("#fade").style.transition="";
-  ({home,shop,stube,arena})[id]();
+  mode="world";
 }
 async function leaveBuilding(){
   EXITING=true; clearKeys(); mode="door"; const I=INSIDE;
@@ -1306,6 +1363,226 @@ async function leaveBuilding(){
   sfx("door"); await tween(160,k=>{ if(DOORA) DOORA.o=1-k; }); DOORA=null;
   S.pos={x:P.x,y:P.y,dir:"down",area:AREA.id}; save();
   EXITING=false; if(mode==="door") mode="world";
+}
+
+
+/* ---------- Begehbare Innenräume ---------- */
+
+function roomPal(){ const k=ROOM.kind; if(k==="arena") return {wall:ROOM.b.wall,trim:ROOM.b.roof,f1:"#ddd6c6",f2:"#d2cab8"};
+  return {home:{wall:"#f2e3c6",trim:"#c0504d",f1:"#c49a6c",f2:"#b88b5c"},stube:{wall:"#f3e6cf",trim:"#2e6b8a",f1:"#d9b07c",f2:"#cfa571",pat:"rgba(160,120,70,.18)"},shop:{wall:"#e8eef7",trim:"#3a6ea5",f1:"#e9eef2",f2:"#d6dee6"}}[k]; }
+function buildRoom(kind){
+  const big=kind==="stube", W=big?20:15, H=big?13:11, wh=big?3:2; ROOM.wh=wh; ROOM.spawn=[7,9,"up"]; ROOM.heal=null; ROOM.cats=null;
+  MW=W; MH=H; map=[]; for(let y=0;y<H;y++) map.push(Array(W).fill(","));
+  for(let x=0;x<W;x++){ for(let y=0;y<wh;y++) map[y][x]="|"; map[H-1][x]="|"; } for(let y=0;y<H;y++){ map[y][0]="|"; map[y][W-1]="|"; }
+  if(!big) map[H-1][7]="M"; BUILD=[]; doorAt={}; NPCS=[]; OBJS=[];
+  const obj=(x,y,w,h,draw,act,solid=true)=>{ OBJS.push({x,y,w,h,draw,act}); if(solid) for(let j=y;j<y+h;j++) for(let i=x;i<x+w;i++) if(map[j][i]===",") map[j][i]="o"; };
+  const win=(x)=>obj(x,1,1,1,(c,X,Y)=>{ px(c,DK,X+2,Y+2,12,11); px(c,NIGHTLV>.2?"#2a3a6a":"#9fd3ff",X+3,Y+3,10,9); px(c,DK,X+7,Y+3,1,9); px(c,"#fff",X+4,Y+4,2,2); },null);
+  const plant=(x,y)=>obj(x,y,1,1,(c,X,Y)=>{ px(c,"#8b6440",X+4,Y+10,8,5); px(c,"#2e9e5b",X+2,Y+2,12,9); px(c,"#3fae6a",X+5,Y,6,5); },null);
+  if(kind==="home"){
+    win(4); win(9);
+    obj(1,2,2,3,(c,X,Y)=>{ px(c,"#7a4b2a",X,Y,32,46); px(c,"#fff",X+3,Y+3,26,10); px(c,"#d64045",X+2,Y+15,28,29); px(c,"#a8302f",X+2,Y+15,28,3); px(c,"#f28b82",X+6,Y+22,20,2); },()=>restBed());
+    obj(11,1,2,2,(c,X,Y)=>{ px(c,"#7a4b2a",X+1,Y+2,30,30); px(c,"#5a3518",X+15,Y+3,2,28); px(c,"#ffd166",X+11,Y+16,2,4); px(c,"#ffd166",X+19,Y+16,2,4); px(c,"#5a3518",X+1,Y+2,30,2); },()=>creator(false));
+    obj(5,5,5,3,(c,X,Y)=>{ px(c,"#3a6ea5",X,Y+2,80,44); px(c,"#6f93bd",X+4,Y+6,72,36); px(c,"#3a6ea5",X+12,Y+14,56,20); },null,false);
+    obj(12,8,1,1,(c,X,Y)=>{ px(c,"#8b6440",X+1,Y+6,14,9); px(c,"#5a3518",X+2,Y+14,2,2); px(c,"#5a3518",X+12,Y+14,2,2); px(c,"#3a3a3a",X+3,Y,10,7); px(c,"#9fd3ff",X+4,Y+1,8,5); },()=>say("Computer",["Auf dem Bildschirm läuft ein Video: «Die 10 seltensten Zahlinge in Kalkulia». Spannend!"]));
+    plant(1,9); plant(13,2);
+    if(XMAS()) obj(6,1,1,1,(c,X,Y)=>{ px(c,"#1f6b33",X+2,Y+10,12,5); px(c,"#2e8b46",X+4,Y+5,8,6); px(c,"#1f6b33",X+6,Y+1,4,5); px(c,"#ffd166",X+7,Y-1,2,2); px(c,"#d64045",X+5,Y+8,1,1); px(c,"#4cc9f0",X+10,Y+12,1,1); },()=>say("Weihnachtsbaum",["Ein kleiner Weihnachtsbaum. Wie gemütlich!"]));
+  }
+  if(kind==="stube") buildStube(obj);
+  if(kind==="shop"){
+    [1,2,3,4,10,11,12,13].forEach(x=>obj(x,1,1,1,(c,X,Y)=>{ px(c,"#8b6440",X,Y+6,16,2); px(c,"#8b6440",X,Y+14,16,2); for(let i=0;i<3;i++){ const col=["#d64045","#4aa3df","#2e9e5b","#ffd166","#8e6cc9"][(x+i)%5]; px(c,col,X+1+i*5,Y,4,6); px(c,col,X+1+i*5,Y+8,4,6); } },null));
+    obj(1,4,13,1,(c,X,Y)=>{ px(c,"#7a4b2a",X,Y+2,208,13); px(c,"#a87b4f",X,Y,208,4); px(c,"#5a3518",X,Y+14,208,2); px(c,"#ffd166",X+150,Y-6,10,7); px(c,"#b8860b",X+154,Y-4,3,4); },()=>shop());
+    win(6); win(8);
+    plant(1,9); plant(13,9);
+    NPCS.push({id:"seller",x:7,y:3,dir:"down",name:"Verkäuferin",look:SELLER,act:()=>shop(),lines:[]});
+  }
+  if(kind==="arena"){
+    const A=AREA.arena;
+    obj(2,3,11,6,(c,X,Y)=>{ c.strokeStyle="rgba(255,255,255,.6)"; c.lineWidth=1; c.strokeRect(X+.5,Y+.5,175,95); c.beginPath(); c.moveTo(X,Y+48.5); c.lineTo(X+176,Y+48.5); c.stroke(); c.beginPath(); c.arc(X+88,Y+48.5,14,0,7); c.stroke(); },null,false);
+    [2,5,9,12].forEach(x=>obj(x,1,1,1,(c,X,Y)=>{ px(c,ROOM.b.roof,X+3,Y,10,14); px(c,"#ffd166",X+6,Y+4,4,4); px(c,ROOM.b.roof,X+3,Y+14,4,2); px(c,ROOM.b.roof,X+9,Y+14,4,2); },null));
+    [[1,3],[13,3]].forEach(([x,y])=>obj(x,y,1,2,(c,X,Y)=>{ px(c,"#9aa1ab",X+3,Y+18,10,13); px(c,"#c0c6ce",X+4,Y+4,8,14); px(c,"#ffd166",X+6,Y,4,4); },null));
+    NPCS.push({id:"leader",x:7,y:3,dir:"down",name:A.leader,look:A.look,act:()=>arena(),lines:[]});
+  }
+}
+async function restBed(){ clearKeys(); mode="cut"; await fadeTo(true,300); healAll(); save(); hud(); await sleep(600); await fadeTo(false,300); $("#fade").style.transition=""; mode="world"; say("Bett",["Du hast dich ausgeruht. Dein ganzes Team ist wieder topfit!"]); }
+function healStation(){ healAll(); save(); hud(); sfx("ok"); say("Kuschelsofa",["Du machst es dir mit deinem Team auf dem Sofa gemütlich … Alle sind wieder topfit!"]); }
+function teacherDesk(){ emmPanel(); }
+async function leaveRoom(){
+  clearKeys(); mode="door"; await fadeTo(true,160);
+  const R=ROOM; ROOM=null; OBJS=[]; loadArea(AREA.id);
+  P.x=R.out.x; P.y=R.out.y; P.fx=P.x; P.fy=P.y; P.moving=false; P.dir="down"; DOORA={x:R.door[0],y:R.door[1],o:1};
+  S.pos={x:P.x,y:P.y,dir:"down",area:AREA.id}; save();
+  await sleep(100); await fadeTo(false,180); $("#fade").style.transition="";
+  sfx("door"); await tween(160,k=>{ if(DOORA) DOORA.o=1-k; }); DOORA=null;
+  if(mode==="door") mode="world";
+}
+function enterRoomDirect(kind,out,door,px0,py0,dir,atHeal){
+  ROOM={kind,out,door,b:BUILD.find(b=>b.id===kind)}; buildRoom(kind);
+  if(ROOM.spawn&&px0==null){ [px0,py0,dir]=ROOM.spawn; } if(atHeal&&ROOM.heal){ [px0,py0,dir]=ROOM.heal; }
+  P.x=px0; P.y=py0; P.fx=px0; P.fy=py0; P.dir=dir; P.moving=false;
+}
+
+/* ---------- Die Rechenstube (Schulzimmer mit Herrn Emmenegger und Frau Müller) ---------- */
+const EMMENEGGER=look({hair:"kurz",hairC:"#3b2414",skin:"#f1c27d",topC:"#2f3640",pants:"#1d1b26",shoes:"sneaker",shoeC:"#3a3a3a"});
+const MUELLER=look({hair:"lang",hairC:"#7a4b2a",skin:"#ffe0c2",topC:"#c06c84",pants:"#3a4a6b",glasses:"nerd",glassC:"#1d1b26"});
+const SPRIMG={}; const sprImg=sp=>{ if(!SPRIMG[sp]){ const im=new Image(); im.src=sprite(sp); SPRIMG[sp]=im; } return SPRIMG[sp]; };
+const ADVENT=()=>{ const d=new Date(), m=d.getMonth()+1; return XMAS()||m===12||m===11||(m===1&&d.getDate()<7); };
+function garland(c,x1,x2,y,sag,t,ends=10){
+  const blink=Math.floor(t/450);
+  for(let x=x1;x<=x2;x++){ const yy=Math.round(y+sag*Math.sin(Math.PI*(x-x1)/Math.max(1,x2-x1))), h=hash(x,y);
+    px(c,"#163d28",x,yy-2,1,5); if(h%2) px(c,"#24583a",x,yy-3+(h%3),1,2); if(h%4===0) px(c,"#e8f1ff",x,yy-3,1,1); if(h%5===0) px(c,"#e8f1ff",x,yy+2,1,1);
+    if((x-x1)%9===4){ const col=["#ff5a5a","#ffd166","#4cc9f0","#7bf1a8"][((x-x1)/9+blink)%4|0]; px(c,col,x,yy+2,2,2); px(c,"rgba(255,255,255,.6)",x,yy+2,1,1); } }
+  [x1,x2].forEach(ex=>{ for(let j=0;j<ends;j++){ const h=hash(ex,j); px(c,"#163d28",ex-1,y+j,3,1); if(h%3===0) px(c,"#e8f1ff",ex-1+(h%3),y+j,1,1); } });
+}
+const SCREEN=[
+  (c,X,Y,W,H,t)=>{ const sp=DEX[Math.floor(t/3600)%DEX.length], im=sprImg(sp); if(im.complete) c.drawImage(im,X+W/2-12,Y+2,24,24); txt(c,MONS[sp].name,X+W/2,Y+H-3,5,"#fff"); },
+  (c,X,Y,W,H,t)=>{ ["+","−","×","÷"].forEach((o,i)=>txt(c,o,X+9+i*15,Y+H/2+5,14,["#ff8fab","#ffd166","#7bf1a8","#4cc9f0"][(i+Math.floor(t/300))%4])); },
+  (c,X,Y,W,H)=>{ txt(c,"3",X+16,Y+12,9,"#fff"); px(c,"#fff",X+11,Y+15,10,1); txt(c,"4",X+16,Y+25,9,"#fff"); txt(c,"=",X+30,Y+19,9,"#ffd166"); txt(c,"0,75",X+47,Y+19,9,"#7bf1a8"); },
+  (c,X,Y,W,H)=>{ txt(c,"LET'S PLAY",X+W/2,Y+13,7,"#ffd166"); txt(c,"KALKULIA",X+W/2,Y+24,9,"#fff"); },
+  (c,X,Y,W,H)=>{ txt(c,"MATHE",X+W/2,Y+12,7,"#fff"); txt(c,"NIVEAU C",X+W/2,Y+24,9,"#7bf1a8"); },
+  (c,X,Y,W,H,t)=>{ const m=["Du schaffst das!","Fehler = Lernchance","Formel · Einsetzen · Einheit","Zuerst auf 1 zurückrechnen","1 m = 100 cm","1 dm³ = 1 Liter","c² = a² + b²"][Math.floor(t/21600)%7]; txt(c,"TIPP",X+W/2,Y+10,6,"#ffd166"); txt(c,m,X+W/2,Y+22,m.length>18?4.5:5.5,"#fff"); }
+];
+function txt(c,s,x,y,size,col){ c.fillStyle=col; c.font=`bold ${size}px Fredoka, Arial, sans-serif`; c.textAlign="center"; c.textBaseline="alphabetic"; c.fillText(s,x,y); }
+function screenMsg(){ return ["Auf dem Bildschirm läuft: «Let's play Kalkulia!»","Auf dem Bildschirm steht: «Fehler sind Lernchancen!»","Auf dem Bildschirm steht: «Mathe Niveau C – du schaffst das!»","Auf dem Bildschirm zeigt sich ein Zahling – und winkt dir zu."][Math.floor(performance.now()/3600)%4]; }
+function buildStube(obj){
+  ROOM.spawn=[16,3,"down"]; ROOM.heal=[16,11,"up"]; map[2][16]="M";
+  const tt=()=>performance.now();
+  // ----- Wand -----
+  obj(1,0,18,1,(c,X,Y)=>{ const b=Math.floor(tt()/500); if(ADVENT()) for(let x=6;x<288;x+=10){ const yy=Y+12+Math.round(Math.sin(x*.2)*1.5); px(c,"#3a3a3a",X+x,yy-1,10,1); px(c,["#ff5a5a","#ffd166","#4cc9f0","#7bf1a8"][((x/10|0)+b)%4],X+x+4,yy,2,3); } },null);
+  obj(1,1,2,2,(c,X,Y)=>{ px(c,"#8b6440",X+4,Y+2,24,24); px(c,"#9fd3ff",X+6,Y+4,20,20); px(c,"#c8ecff",X+6,Y+4,20,6); px(c,"#8b6440",X+15,Y+4,2,20); px(c,"#8b6440",X+6,Y+13,20,2); px(c,"#fff",X+8,Y+6,3,3); px(c,"#d64045",X+2,Y,4,28); px(c,"#d64045",X+26,Y,4,28); px(c,"#a8302f",X+2,Y+26,4,2); px(c,"#a8302f",X+26,Y+26,4,2); },()=>say("Fenster",["Draussen fliegen ein paar Vögel vorbei. Ein schöner Tag zum Rechnen!"]));
+  obj(3,0,4,3,(c,X,Y)=>{ const t=tt(); px(c,"#1d1b26",X+1,Y+10,62,34); px(c,"#2b2b3a",X+2,Y+11,60,32); px(c,"#10243e",X+4,Y+13,56,28);
+      c.save(); c.beginPath(); c.rect(X+4,Y+13,56,28); c.clip(); SCREEN[Math.floor(t/3600)%SCREEN.length](c,X+4,Y+13,56,28,t); c.restore();
+      px(c,"rgba(255,255,255,.08)",X+4,Y+13,56,4); px(c,"#3a3a3a",X+28,Y+44,8,3); px(c,"#38b764",X+58,Y+41,2,1);
+      if(ADVENT()) garland(c,X-2,X+66,Y+8,4,t,8); },()=>say("Grosser Bildschirm",[screenMsg()]));
+  obj(7,1,2,2,(c,X,Y)=>{ px(c,"#8b6440",X+1,Y+2,30,22); px(c,"#c99a5b",X+2,Y+3,28,20); [[4,5,"#fff3a8"],[13,4,"#ffd1dc"],[22,6,"#cde9ff"],[6,14,"#d4f5c9"],[17,13,"#fff"]].forEach(([a,b,col])=>{ px(c,col,X+a,Y+b,7,7); px(c,"#d64045",X+a+3,Y+b,1,1); px(c,"#999",X+a+1,Y+b+3,5,1); px(c,"#999",X+a+1,Y+b+5,4,1); }); },
+      ()=>say("Pinnwand",[pick(["Auf einem Zettel steht: «Abgabe Fehlerblatt bis Freitag»","Ein Zettel: «Formel aufschreiben – Werte einsetzen – Einheit nicht vergessen!»","Ein Zettel: «Wer hat meinen Kugelschreiber gesehen? – E.»","Eine Zeichnung von einem Zahling. Darunter steht: «Für Herrn Emmenegger»"])]));
+  obj(9,1,1,2,(c,X,Y)=>{ px(c,"#fff",X+2,Y+3,12,18); px(c,"#3a6ea5",X+2,Y+3,12,3); c.strokeStyle="#d64045"; c.lineWidth=1; c.beginPath(); c.moveTo(X+4,Y+18); c.lineTo(X+12,Y+18); c.lineTo(X+4,Y+9); c.closePath(); c.stroke(); px(c,"#999",X+4,Y+20,8,1); },()=>say("Poster",["Ein Poster mit dem Satz des Pythagoras: c² = a² + b². Daneben hat jemand ein Herz gemalt."]));
+  // FCL-Ecke: Foto, Uhr, Trikot, Regal mit Flaschen
+  obj(10,1,2,2,(c,X,Y)=>{ px(c,"#6b4f3a",X+3,Y+8,24,17); px(c,"#fff",X+4,Y+9,22,15); px(c,"#9fd3ff",X+5,Y+10,20,7); px(c,"#5fae45",X+5,Y+17,20,6);
+      for(let i=0;i<6;i++){ px(c,"#1e4fa3",X+6+i*3,Y+15,2,4); px(c,"#f1c27d",X+6+i*3,Y+13,2,2); } for(let i=0;i<6;i++){ px(c,"#1e4fa3",X+7+i*3,Y+19,2,3); px(c,"#c68642",X+7+i*3,Y+17,2,2); } px(c,"#ffd166",X+14,Y+17,3,2);
+      px(c,"#c9a227",X+9,Y+26,12,4); px(c,"#5a3518",X+11,Y+27,8,1); px(c,"#5a3518",X+11,Y+28,6,1); },()=>say("Foto",["Ein gerahmtes Mannschaftsfoto: der Cupsieg 2021! Alle jubeln mit dem Pokal."]));
+  obj(12,0,1,3,(c,X,Y)=>{ const d=new Date(), h=(d.getHours()%12+d.getMinutes()/60)/12*Math.PI*2, m=d.getMinutes()/60*Math.PI*2;
+      c.fillStyle="#1d1b26"; c.beginPath(); c.arc(X+8,Y+11,6,0,7); c.fill(); c.fillStyle="#fff"; c.beginPath(); c.arc(X+8,Y+11,5,0,7); c.fill();
+      c.strokeStyle="#1d1b26"; c.lineWidth=1; c.beginPath(); c.moveTo(X+8,Y+11); c.lineTo(X+8+Math.sin(h)*3,Y+11-Math.cos(h)*3); c.moveTo(X+8,Y+11); c.lineTo(X+8+Math.sin(m)*4.5,Y+11-Math.cos(m)*4.5); c.stroke();
+      px(c,"#6b4f3a",X+1,Y+18,15,20); px(c,"#eef3fb",X+2,Y+19,13,18);
+      px(c,"#fff",X+4,Y+21,9,12); px(c,"#fff",X+2,Y+21,3,5); px(c,"#fff",X+12,Y+21,3,5); px(c,"#1e4fa3",X+6,Y+21,5,1); px(c,"#1e4fa3",X+2,Y+25,3,1); px(c,"#1e4fa3",X+12,Y+25,3,1); px(c,"#d64045",X+5,Y+26,7,2); px(c,"#1e4fa3",X+4,Y+32,9,1);
+      px(c,"#8b6440",X-2,Y+42,22,2); px(c,"#5a3518",X-1,Y+44,2,2); px(c,"#5a3518",X+17,Y+44,2,2);
+      [[1,"#5a1f2b"],[11,"#3b1520"]].forEach(([dx,col])=>{ px(c,col,X+dx,Y+33,5,9); px(c,col,X+dx+1,Y+30,3,3); px(c,"#1d1b26",X+dx+1,Y+29,3,1); px(c,"#fff",X+dx,Y+35,5,4); px(c,"#1e4fa3",X+dx,Y+36,5,2); }); },
+      ()=>say("Sammlerecke",["Ein eingerahmtes Trikot – ein echtes Sammlerstück! Darüber tickt die Wanduhr, darunter stehen zwei besondere Weinflaschen.","Hier sieht man sofort: Das ist eine ganz persönliche Erinnerungsecke."]));
+  obj(13,1,2,2,(c,X,Y)=>{ px(c,"#8b6440",X+2,Y+4,28,24); for(let r=0;r<2;r++){ px(c,"#5a3518",X+3,Y+14+r*10,26,2); for(let i=0;i<7;i++) px(c,["#d64045","#3a6ea5","#2e9e5b","#ffd166","#8e6cc9","#ff8fab","#f2a541"][(i+r*2)%7],X+4+i*3.6,Y+6+r*10,3,8); } [["kantling",4],["troepfli",13],["flammli",21]].forEach(([sp,dx])=>{ const im=sprImg(sp); if(im.complete) c.drawImage(im,X+dx,Y-5,9,9); }); },
+      ()=>say("Bücherregal",["Mathematik-Bücher, Lernhefte – und oben drauf stehen ein paar Zahling-Figuren als Deko."]));
+  obj(15,1,1,2,(c,X,Y)=>{ const cx2=X+8, cy2=Y+15; [[7,"#1d1b26"],[6,"#f6e3bd"],[5,"#1d1b26"],[4,"#d64045"],[3,"#2e9e5b"],[2,"#f6e3bd"],[1,"#d64045"]].forEach(([r,col])=>{ c.fillStyle=col; c.beginPath(); c.arc(cx2,cy2,r,0,7); c.fill(); }); px(c,"#ffd166",cx2+2,cy2-3,4,1); px(c,"#9aa1ab",cx2+5,cy2-4,3,1); },()=>{ const n=pick([20,5,1,18,"Bull's Eye",3,19]); say("Dartscheibe",[`Du wirfst einen Pfeil … ${n==="Bull's Eye"?"Volltreffer: Bull's Eye! 50 Punkte!":`Treffer auf die ${n}!`}`]); });
+  obj(16,0,1,3,(c,X,Y,)=>{ const t=tt(); px(c,"#5a3518",X+1,Y+15,14,33); px(c,"#8b5a2b",X+2,Y+16,12,32); px(c,"#6b4423",X+4,Y+19,8,10); px(c,"#6b4423",X+4,Y+32,8,10); px(c,"#ffd166",X+11,Y+33,2,2); px(c,"#38b764",X+5,Y+9,6,4); px(c,"#fff",X+6,Y+10,4,2);
+      if(ADVENT()){ garland(c,X-5,X+21,Y+13,3,t,14); } },null,false);
+  obj(17,1,2,2,(c,X,Y)=>{ px(c,"#8b6440",X+4,Y+6,10,22); px(c,"#5a3518",X+5,Y+7,8,20); px(c,"#fff",X+6,Y+8,6,8); px(c,"#3a6ea5",X+6,Y+9,6,1); px(c,"#999",X+6,Y+11,5,1); px(c,"#999",X+6,Y+13,6,1);
+      px(c,"#9fd3ff",X+18,Y+4,12,14); px(c,"#8b6440",X+17,Y+3,14,1); px(c,"#8b6440",X+17,Y+18,14,1); px(c,"#8b6440",X+23,Y+4,1,14); },()=>say("Stundenplan",["Am Stundenplan steht: Mathematik, Mathematik, Kalkulia. Perfekt!"]));
+  // ----- Möbel -----
+  obj(1,3,1,3,(c,X,Y)=>{ px(c,"#8b6440",X+1,Y-6,15,52); for(let r=0;r<4;r++){ px(c,"#5a3518",X+2,Y+5+r*11,13,2); for(let i=0;i<3;i++) px(c,["#d64045","#3a6ea5","#2e9e5b","#ffd166","#8e6cc9"][(i+r)%5],X+3+i*4,Y-3+r*11,3,8); } px(c,"#c9a227",X+4,Y+38,8,4); },()=>say("Regal",["Schulmaterial: Geodreiecke, Zirkel, Taschenrechner, Massbänder. Alles ordentlich beschriftet."]));
+  // Lehrerpult mit Computer
+  obj(3,5,4,1,(c,X,Y)=>{ const t=tt(); px(c,"#6b4423",X,Y+1,64,13); px(c,"#8b5a2b",X,Y,64,4); px(c,"#5a3518",X+2,Y+13,4,3); px(c,"#5a3518",X+58,Y+13,4,3);
+      px(c,"#2b2b3a",X+20,Y-9,22,10); px(c,"#1d1b26",X+21,Y-8,20,8); px(c,"#3a3a3a",X+29,Y+1,4,2); px(c,"#c0c6ce",X+22,Y+3,18,3); if(EMM_STATE==="type"&&Math.floor(t/120)%2) px(c,"#fff",X+24+Math.floor(t/120)%14,Y+3,2,1);
+      px(c,"#fff",X+4,Y-1,10,6); px(c,"#fff",X+6,Y-3,10,6); if(EMM_STATE==="paper"&&Math.floor(t/300)%2) px(c,"#f6e3bd",X+10,Y-6,7,5);
+      px(c,"#fff",X+49,Y-2,6,6); px(c,"#d64045",X+50,Y-1,4,4); px(c,"#fff",X+55,Y,2,2); const im=sprImg("blattli"); if(im.complete) c.drawImage(im,X+44,Y-9,8,8); },()=>emmPanel());
+  // Computerarbeitsplatz + Drucker
+  obj(8,4,2,1,(c,X,Y)=>{ px(c,"#c49a6c",X,Y+3,32,10); px(c,"#8b6440",X,Y+12,32,2); px(c,"#5a3518",X+2,Y+13,2,3); px(c,"#5a3518",X+28,Y+13,2,3);
+      px(c,"#2b2b3a",X+8,Y-8,18,12); px(c,"#264d7a",X+9,Y-7,16,9); px(c,"#fff",X+11,Y-5,8,1); px(c,"#fff",X+11,Y-3,11,1); px(c,"#d64045",X+11,Y-1,5,1); px(c,"#3a3a3a",X+15,Y+4,4,1); px(c,"#c0c6ce",X+9,Y+6,16,3);
+      px(c,"#3a6ea5",X+12,Y+15,8,4); },()=>book());
+  obj(10,4,1,1,(c,X,Y)=>{ const t=tt(); px(c,"#8b6440",X,Y+6,16,8); px(c,"#5a3518",X+1,Y+13,2,3); px(c,"#5a3518",X+13,Y+13,2,3); px(c,"#c0c6ce",X+1,Y-3,14,9); px(c,"#9aa1ab",X+1,Y+4,14,2); px(c,"#1d1b26",X+3,Y,10,1); px(c,"#fff",X+3,Y-6,10,4); px(c,Math.floor(t/500)%2?"#38b764":"#1f6b33",X+12,Y+1,2,1);
+      if(Math.floor(t/4000)%3===0){ const k=(t%4000)/4000; px(c,"#fff",X+3,Y+1+Math.round(k*6),10,3); } },()=>book());
+  // Lernmaterial-Regal
+  obj(12,3,2,1,(c,X,Y)=>{ px(c,"#c49a6c",X,Y-4,32,18); for(let i=0;i<4;i++){ px(c,["#ffd166","#4cc9f0","#ff8fab","#7bf1a8"][i],X+2+i*7.5,Y-2,6,6); px(c,["#f2a541","#3a6ea5","#d64045","#2e9e5b"][i],X+2+i*7.5,Y+6,6,6); } },()=>say("Fördermaterial",["Kisten mit Lernkarten, Würfeln, Bruchstreifen und Massstäben. Frau Müller hat alles beschriftet."]));
+  // Arbeitsplatz Frau Müller
+  obj(13,6,3,1,(c,X,Y)=>{ px(c,"#b88b5c",X,Y+2,48,12); px(c,"#d4a373",X,Y,48,4); px(c,"#5a3518",X+2,Y+13,3,3); px(c,"#5a3518",X+43,Y+13,3,3);
+      px(c,"#c0c6ce",X+17,Y-5,16,8); px(c,"#3a3a3a",X+18,Y-4,14,6); px(c,"#9fd3ff",X+19,Y-3,12,4); px(c,"#9aa1ab",X+15,Y+3,20,2);
+      [["#ff8fab",2],["#4cc9f0",5],["#ffd166",8]].forEach(([col,dy])=>px(c,col,X+3,Y-dy+3,10,3)); px(c,"#fff",X+38,Y-2,8,6); px(c,"#999",X+39,Y,6,1); px(c,"#2e9e5b",X+41,Y-6,3,4); },()=>muellerPanel());
+  // Adventskranz-Tisch
+  obj(16,8,1,1,(c,X,Y)=>{ const t=tt(); px(c,"#8b6440",X+1,Y+5,14,8); px(c,"#5a3518",X+7,Y+12,2,4);
+      if(ADVENT()){ px(c,"#1f5a33",X+1,Y+2,14,5); px(c,"#2e8b46",X+2,Y+1,12,2); [[2,"#d64045"],[6,"#d64045"],[10,"#d64045"],[13,"#d64045"]].forEach(([dx,col],i)=>{ px(c,col,X+dx,Y-4,2,5); const f=Math.sin(t/90+i*2); px(c,"#ffd166",X+dx,Y-6-(f>0?1:0),2,2); px(c,"#fff3c4",X+dx,Y-5,1,1); }); px(c,"#ffd166",X+5,Y+3,1,1); px(c,"#d64045",X+9,Y+3,1,1); }
+      else { px(c,"#2e9e5b",X+5,Y-2,6,6); } },()=>say(ADVENT()?"Adventskranz":"Tischchen",ADVENT()?["Die Kerzen am Adventskranz flackern gemütlich. Es riecht nach Tannenzweigen."]:["Ein kleines Tischchen mit einer Pflanze."]));
+  // Schülerpulte
+  [[4,8],[6,8],[9,8],[11,8],[4,10],[6,10],[9,10],[11,10]].forEach(([x,y],i)=>obj(x,y,1,1,(c,X,Y)=>{ px(c,"#c49a6c",X+1,Y+2,14,8); px(c,"#8b6440",X+1,Y+9,14,2); px(c,"#5a3518",X+2,Y+11,2,4); px(c,"#5a3518",X+12,Y+11,2,4); px(c,"#fff",X+3+(i%3),Y+3,6,5); px(c,"#3a6ea5",X+6,Y+13,5,3); px(c,"#2b5a8a",X+6,Y+12,5,1); if(i%3===1) px(c,"#d64045",X+11,Y+3,1,4); },()=>say("Pult",[["Auf dem Pult liegt ein Fehlerblatt. Alles sauber verbessert – stark!","In den Deckel hat jemand «π ≈ 3,14» geritzt.","Unter dem Pult klebt ein Kaugummi. Igitt!","Ein Geodreieck und ein angeknabberter Bleistift."][i%4]])));
+  // Kuschelsofa (Heilen)
+  obj(15,10,3,1,(c,X,Y)=>{ px(c,"#5a6bb0",X+1,Y-6,46,10); px(c,"#6f80c8",X+1,Y+2,46,10); px(c,"#4a5a9a",X,Y-4,4,16); px(c,"#4a5a9a",X+44,Y-4,4,16); px(c,"#ffd166",X+8,Y-3,8,7); px(c,"#ff8fab",X+30,Y-3,8,7); px(c,"#d64045",X+18,Y+3,14,7); px(c,"#fff",X+18,Y+5,14,1); },()=>healStation());
+  // Pflanzen
+  [[1,11],[18,11],[1,7]].forEach(([x,y])=>obj(x,y,1,1,(c,X,Y)=>{ px(c,"#b5562f",X+4,Y+9,8,6); px(c,"#2e9e5b",X+2,Y+1,12,9); px(c,"#3fae6a",X+5,Y-3,6,6); px(c,"#3fae6a",X+1,Y+4,4,3); },()=>say("Pflanze",["Eine Zimmerpflanze. Jemand giesst sie offenbar regelmässig – sie sieht super aus!"])));
+  // Katzenbaum
+  obj(18,4,1,3,(c,X,Y)=>{ px(c,"#d6c3a1",X+6,Y-10,4,56); for(let i=0;i<30;i+=3) px(c,"#c4ad86",X+6,Y-8+i*1.7,4,1); px(c,"#8b6440",X,Y+40,16,6); px(c,"#9a8670",X+1,Y+18,14,4); px(c,"#9a8670",X+1,Y-10,14,4); px(c,"#7a6650",X+1,Y-8,14,2); px(c,"#7a6650",X+1,Y+20,14,2); px(c,"#ff8fab",X+12,Y+22,2,5); },()=>say("Katzenbaum",["Der Katzenbaum von Jackie und Josy. Oben ist ihr Lieblingsplatz zum Schlafen."]));
+  // ----- Personen -----
+  NPCS.push({id:"emm",x:5,y:4,dir:"down",name:"Herr Emmenegger",look:EMMENEGGER,sx:1.12,act:()=>emmPanel(),lines:[]});
+  NPCS.push({id:"mue",x:14,y:5,dir:"down",name:"Frau Müller",look:MUELLER,sx:.92,act:()=>muellerPanel(),lines:[]});
+  // ----- Katzen -----
+  ROOM.cats=[mkCat("Jackie","#5f636b","#3a3d42","#9aa1ab",[10.2,5.4]),mkCat("Josy","#c8954a","#8a5a24","#f2d29b",[18,3.4,-34])];
+  ROOM.tick=stubeTick;
+}
+let EMM_STATE="type", EMM_T=0, MUE_T=0;
+function stubeTick(t){
+  const E=NPCS.find(n=>n.id==="emm"), M=NPCS.find(n=>n.id==="mue");
+  if(E&&mode!=="dialog"&&mode!=="panel"){ if(t>EMM_T){ EMM_STATE=pick(["type","type","screen","paper","nod"]); EMM_T=t+2500+Math.random()*2500; }
+    E.dir=EMM_STATE==="screen"?"up":"down"; E.oy=EMM_STATE==="nod"?(Math.floor(t/250)%2):EMM_STATE==="type"?(Math.floor(t/180)%2?0:0):0; }
+  if(M&&mode!=="dialog"&&mode!=="panel"){ if(t>MUE_T){ const st=pick(["read","laptop","help","look"]); M.st=st; MUE_T=t+3000+Math.random()*3000; M.bubble=st==="help"?pick(["?","!","✓"]):null; M.dir=st==="help"?pick(["left","right"]):st==="look"?"left":"down"; } }
+  updCats(t);
+}
+const CATSPOTS=[[10.2,5.4,0,"watch"],[7,6.6,0],[12.5,9.3,0],[3,9.4,0],[8,11,0],[17.3,7.3,0],[14.6,3.6,0],[2.5,6.8,0],[18,3.4,-34,"high"],[18,5.2,-16,"high"],[1,3,-22,"high"],[16,10,-6,"sofa"],[13,4.6,0,"behind"],[7.5,3.3,0,"behind"]];
+function mkCat(name,base,stripe,light,start){ return {name,base,stripe,light,x:start[0],y:start[1],z:start[2]||0,tx:start[0],ty:start[1],tz:start[2]||0,state:"sit",until:0,face:1,sx:0,sy:0,sz:0,mt:0,md:1}; }
+function updCats(t){
+  ROOM.cats.forEach((k,i)=>{
+    if(k.state==="walk"){ const d=Math.min(1,(t-k.mt)/k.md); k.x=k.sx+(k.tx-k.sx)*d; k.y=k.sy+(k.ty-k.sy)*d; const hop=Math.abs(k.tz-k.sz)>4?Math.sin(d*Math.PI)*-10:0; k.z=k.sz+(k.tz-k.sz)*d+hop;
+      if(d>=1){ k.state=k.spot&&(k.spot[3]==="high"||k.spot[3]==="sofa")&&Math.random()<.7?"sleep":"sit"; k.until=t+(k.state==="sleep"?9000+Math.random()*9000:2500+Math.random()*4000); } return; }
+    if(t<k.until) return;
+    const other=ROOM.cats[1-i]; let sp; do{ sp=pick(CATSPOTS); } while(other&&Math.abs(other.tx-sp[0])+Math.abs(other.ty-sp[1])<1);
+    k.spot=sp; k.sx=k.x; k.sy=k.y; k.sz=k.z; k.tx=sp[0]; k.ty=sp[1]; k.tz=sp[2]; k.face=k.tx>=k.x?1:-1; k.mt=t; k.md=Math.max(600,Math.hypot(k.tx-k.x,k.ty-k.y)*520); k.state="walk";
+  });
+}
+function drawCat(c,k,cx,cy,t){
+  const X=Math.round(k.x*TS-cx+1), Y=Math.round(k.y*TS-cy+6+k.z), B=k.base, S2=k.stripe, L=k.light, f=k.face;
+  c.save(); c.translate(X+7,Y); c.scale(f,1); c.translate(-7,0);
+  if(k.z>-2) { c.fillStyle="rgba(0,0,0,.18)"; c.fillRect(1,9,12,2); }
+  if(k.state==="walk"){ const l=Math.floor(t/120)%2; px(c,B,2,3,9,4); px(c,S2,4,3,1,4); px(c,S2,7,3,1,4); px(c,B,9,0,4,4); px(c,B,9,-1,1,1); px(c,B,12,-1,1,1); px(c,L,10,2,2,2); px(c,"#1d1b26",11,1,1,1);
+    px(c,B,0,1,2,1); px(c,B,0,0,1,1); px(c,S2,1,1,1,1); px(c,B,3,7,1,2+l); px(c,B,5,7,1,3-l); px(c,B,8,7,1,2+l); px(c,B,10,7,1,3-l); }
+  else if(k.state==="sit"){ px(c,B,4,2,6,7); px(c,S2,5,4,4,1); px(c,S2,5,6,4,1); px(c,L,5,7,4,2); px(c,B,5,-2,5,4); px(c,B,5,-3,1,1); px(c,B,9,-3,1,1); px(c,"#1d1b26",6,-1,1,1); px(c,"#1d1b26",8,-1,1,1); px(c,"#ff8fab",7,0,1,1);
+    const w=Math.floor(t/600)%2; px(c,B,10,7,3,1); px(c,B,12,6-w,1,2); }
+  else { px(c,B,2,4,10,5); px(c,S2,4,4,1,5); px(c,S2,7,4,1,5); px(c,S2,10,5,1,4); px(c,B,9,3,4,3); px(c,B,9,2,1,1); px(c,B,12,2,1,1); px(c,"#1d1b26",10,4,2,1); px(c,B,1,7,3,2); px(c,L,5,7,4,2);
+    const z=(t/700)%3; c.restore(); c.fillStyle="#fff"; c.font="bold 6px Arial"; c.textAlign="center"; c.globalAlpha=1-z/3; c.fillText("z",X+12+z*2,Y-2-z*3); c.globalAlpha=1; return; }
+  c.restore();
+}
+function emmPanel(){
+  const n=openErrs().length, pr=openErrs().filter(e=>e.printed).length, nx=nextArena(), A=BADGES[nx]?BADGES[nx].name.replace("-Orden","-Arena"):"Arena";
+  const pm=passMode(), free=S.badges.includes(nx)||(S.unlocked||{})[nx]||pm==="off"||(pm==="errors"&&n<=S.settings.maxOpen);
+  const by={}; S.errors.forEach(e=>{ const nm=FIGS[e.fig]?FIGS[e.fig].name:CATS[e.fig]?CATS[e.fig].name:e.fig; by[nm]=(by[nm]||0)+1; }); const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+  const tot=S.stats.correct+S.stats.wrong, q=tot?Math.round(100*S.stats.correct/tot):0;
+  openPanel(`<h2>Herr Emmenegger</h2><div class="row"><img src="${charURL(EMMENEGGER)}" style="width:4.5em;image-rendering:pixelated" alt=""><p>«Hoi ${esc(S.name)}! ${n?`In deinem Fehlerheft sind <b>${n}</b> offene Fehler, davon <b>${pr}</b> gedruckt.`:"Dein Fehlerheft ist leer – super gemacht!"}»</p></div>
+   <h3>Dein Lernfortschritt</h3><p><b>${S.stats.correct}</b> richtig · <b>${S.stats.wrong}</b> falsch${tot?` · Trefferquote <b>${q} %</b>`:""}${top.length?`<br>Übe besonders: <b>${top.join(", ")}</b> – Frau Müller hat dazu Formelblätter.`:""}</p>
+   <p>${A}: ${free?'<span class="tag ok">freigegeben</span>':'<span class="tag open">noch gesperrt</span>'}</p>
+   <p class="muted">So geht's: 1. Am Computer oder Drucker dein Fehlerblatt drucken. 2. Auf Papier verbessern. 3. Das Blatt im Schulzimmer mir oder Frau Müller zeigen – dann wird die Arena freigegeben.</p>
+   <div class="col">${ONLINE?"":`<button class="btn" data-act="stamp">Lehrperson: Blatt gesehen / Arena freigeben</button>`}<button class="btn" data-act="tip">Hast du einen Tipp?</button><button class="btn" data-act="close">Tschüss</button></div>`,{name:"emm",onAct:a=>{ if(a==="close") closePanel(); if(a==="stamp") pinGate(stampPanel,closePanel);
+    if(a==="tip"){ closePanel(); say("Herr Emmenegger",[pick(["Schreib immer zuerst die Formel auf. Dann setzt du die Zahlen ein – und am Schluss die Einheit!","Beim Umrechnen hilft die Einheitentreppe. Frau Müller hat ein Blatt dazu.","Wenn du zweimal falsch liegst, wird die nächste Aufgabe leichter. Das ist kein Grund zum Aufgeben!","Probier ruhig mal eine Stufe-3-Attacke – mehr Schaden, mehr Erfahrung!","Fehler sind keine Niederlage. Wer seine Fehler verbessert, lernt am meisten."])]); } }});
+}
+const HELP=[
+  ["Geometrie",[
+   ["rect","Rechteck",["u = 2 · a + 2 · b","A = a · b"],"a = 5 cm, b = 3 cm → u = 16 cm, A = 15 cm²","Umfang = alle Seiten zusammen. Fläche = Länge mal Breite."],
+   ["square","Quadrat",["u = 4 · s","A = s · s"],"s = 6 m → u = 24 m, A = 36 m²","Alle vier Seiten sind gleich lang."],
+   ["triangle","Dreieck",["A = c · h<sub>c</sub> : 2"],"c = 8 cm, h<sub>c</sub> = 5 cm → A = 20 cm²","Die Höhe steht senkrecht (90°) auf der Grundseite."],
+   ["circle","Kreis",["d = 2 · r","u = d · π","A = r · r · π","π = 3 (wie im Spiel)"],"r = 4 cm → d = 8 cm, u = 24 cm, A = 48 cm²","Radius = Mitte bis Rand. Durchmesser = einmal ganz durch."],
+   ["cuboid","Quader",["V = a · b · c"],"a = 2 m, b = 3 m, c = 4 m → V = 24 m³","Volumen = Länge · Breite · Höhe. Einheit hoch 3!"],
+   ["cube","Würfel",["V = a · a · a","S = 6 · a · a"],"a = 3 m → V = 27 m³, S = 54 m²","S ist die Oberfläche: 6 gleiche Quadrate."],
+   ["pyth","Satz des Pythagoras",["c² = a² + b²","c = √(a² + b²)"],"a = 3 cm, b = 4 cm → c² = 9 + 16 = 25 → c = 5 cm","c ist die Hypotenuse: die längste Seite, gegenüber vom rechten Winkel."]]],
+  ["Einheiten",[
+   ["laenge","Längen",["km —·1000→ m","m —·10→ dm —·10→ cm —·10→ mm"],"3,5 m = 35 dm = 350 cm","Grössere Einheit → kleinere: multiplizieren. Kleinere → grössere: dividieren."],
+   ["flaeche","Flächen",["km² … m² —·100→ dm² —·100→ cm² —·100→ mm²"],"2 m² = 200 dm² = 20 000 cm²","Bei Flächen ist jede Stufe ·100 (nicht ·10)!"],
+   ["volumen","Volumen & Hohlmasse",["m³ —·1000→ dm³ —·1000→ cm³","1 dm³ = 1 l","1 l = 10 dl = 100 cl = 1000 ml","1 cm³ = 1 ml"],"1 m³ = 1000 l = 10 000 dl","Bei Volumen ist jede Stufe ·1000."],
+   ["gewicht","Gewicht",["t —·1000→ kg —·1000→ g —·1000→ mg"],"2,5 kg = 2500 g","Gewicht geht immer in 1000er-Schritten."],
+   ["zeit","Zeit",["1 h = 60 min","1 min = 60 s","1 Tag = 24 h"],"1,5 h = 1 h 30 min = 90 min","0,5 h = 30 min · 0,25 h = 15 min · 0,75 h = 45 min. Achtung: Zeit ist kein Dezimalsystem!"]]],
+  ["Dreisatz",[
+   ["preis","Dreisatz (je mehr, desto mehr)",["3 kg → 7.20 Fr.","1 kg → 7.20 : 3 = 2.40 Fr.","5 kg → 2.40 · 5 = 12.00 Fr."],"Zuerst auf 1 zurückrechnen (dividieren), dann hochrechnen (multiplizieren).","Doppelte Menge → doppelter Preis."],
+   ["umgekehrt","Umgekehrter Dreisatz (je mehr, desto weniger)",["3 Maler → 8 Tage","1 Maler → 3 · 8 = 24 Tage","4 Maler → 24 : 4 = 6 Tage"],"Zuerst multiplizieren, dann dividieren.","Doppelt so viele Maler → halb so viele Tage."]]]
+];
+function helpSheet(h){ return `<div class="hs"><div class="hsf">${figSVG(h[0])}</div><div><h3>${h[1]}</h3>${h[2].map(l=>`<div class="hl">${l}</div>`).join("")}<p><b>Beispiel:</b> ${h[3]}</p><p class="muted"><b>Tipp:</b> ${h[4]}</p></div></div>`; }
+function muellerPanel(sel){
+  if(!sel){ openPanel(`<h2>Frau Müller</h2><div class="row"><img src="${charURL(MUELLER)}" style="width:4.5em;image-rendering:pixelated" alt=""><p>«Hallo ${esc(S.name)}! Zu welchem Thema möchtest du ein Formelblatt anschauen? Du kannst es auch ausdrucken.»</p></div>
+     ${HELP.map(([g,L],gi)=>`<h3>${g}</h3><div class="col hgrid">${L.map((h,i)=>`<button class="btn" data-act="h:${gi}:${i}">${h[1]}</button>`).join("")}</div>`).join("")}
+     <div class="col" style="margin-top:.6em"><button class="btn" data-act="close">Danke, tschüss!</button></div>`,{name:"mue",onAct:a=>{ if(a==="close") closePanel(); if(a.startsWith("h:")){ const [,g,i]=a.split(":"); muellerPanel(HELP[g][1][i]); } }}); return; }
+  openPanel(`<h2>Formelblatt: ${sel[1]}</h2>${helpSheet(sel)}<div class="col" style="margin-top:.6em"><button class="btn" data-act="print">Ausdrucken</button><button class="btn" data-act="back">Anderes Thema</button><button class="btn" data-act="close">Danke, tschüss!</button></div>`,{name:"mueS",onBack:()=>muellerPanel(),onAct:a=>{
+    if(a==="back") muellerPanel(); if(a==="close") closePanel();
+    if(a==="print"){ $("#print").innerHTML=`<h1>Formelblatt: ${sel[1]} – Kalkulia</h1>${helpSheet(sel)}<p style="margin-top:2em;color:#666">Rechenstube · Frau Müller</p>`; setTimeout(()=>{ try{ window.print(); }catch(e){} },120); } }});
 }
 /* --- Regionswechsel: KALKULIA + «Du reist nach …» --- */
 const MAPPOS={dorf:[34,92,"Nullingen"],tal:[96,74,"Einheiten-Tal"],insel:[150,96,"Insel"],gipfel:[196,30,"Gipfel"]};
@@ -1396,9 +1673,9 @@ function book(msg=""){
   const open=openErrs(), sel=printSelection();
   openPanel(`<h2>Fehlerheft</h2><p>Hier landet jede Aufgabe, die du im Kampf falsch gelöst hast. So geht's:</p>
    <p><b>1.</b> Fehlerblatt drucken (höchstens 8 Aufgaben, möglichst verschiedene). <b>2.</b> Auf Papier verbessern. <b>3.</b> Deiner Lehrperson zeigen und in der Rechenstube abstempeln lassen.</p>
-   <div class="col"><button class="btn" data-act="print" ${sel.length?"":"disabled"}>Fehlerblatt drucken (${sel.length} Aufgaben)</button><button class="btn" data-act="back">Zurück</button></div><p class="msg">${msg}</p>
+   <div class="col"><button class="btn" data-act="print" ${sel.length?"":"disabled"}>Fehlerblatt drucken (${sel.length} Aufgaben)</button><button class="btn" data-act="back">Fertig</button></div><p class="msg">${msg}</p>
    <div class="list">${open.length?open.slice().reverse().map(e=>`<div class="item"><div class="grow">${errLine(e)}<br><small>Deine Antwort: ${esc(e.user)} · ${new Date(e.t).toLocaleDateString("de-CH")}</small></div>${e.printed?'<span class="tag pr">gedruckt</span>':'<span class="tag open">offen</span>'}</div>`).join(""):'<p class="muted">Keine offenen Fehler – stark!</p>'}</div>`,{name:"book",onBack:()=>stube(),onAct:a=>{
-    if(a==="back") stube();
+    if(a==="back") closePanel();
     if(a==="print"){ sel.forEach(e=>e.printed=true); save(); printErrors(sel,false); book("Druckfenster geöffnet. Tipp: Dort kannst du auch «Als PDF speichern» wählen."); }
   }});
 }
@@ -1428,9 +1705,9 @@ function doStamp(all){
 function stampPanel(msg=""){
   const pr=openErrs().filter(e=>e.printed);
   openPanel(`<h2>Arena freigeben</h2><p>Offene Fehler: <b>${openErrs().length}</b>, davon gedruckt: <b>${pr.length}</b></p><p class="muted">Freigeben, wenn das verbesserte Blatt vorliegt. Die gedruckten Fehler (und offene Fehler vom gleichen Aufgabentyp) gelten dann als erledigt. Belohnung: 5 Münzen pro gedruckter Aufgabe (max. 40).</p>
-   <div class="col"><button class="btn" data-act="stamp" ${(S.unlocked||{})[nextArena()]?"disabled":""}>${BADGES[nextArena()].name.replace("-Orden","-Arena")} freigeben</button><button class="btn" data-act="back">Zurück</button></div><p class="msg">${msg}</p>`,{name:"stampP",onBack:()=>stube(),onAct:a=>{
-    if(a==="back") stube();
-    if(a==="stamp"){ const r=doStamp(false); S.unlocked={...(S.unlocked||{}),[nextArena()]:true}; save(); hud(); stube(`Arena freigegeben! ${r.n} Fehler erledigt, +${r.c} Münzen.`); }
+   <div class="col"><button class="btn" data-act="stamp" ${(S.unlocked||{})[nextArena()]?"disabled":""}>${BADGES[nextArena()].name.replace("-Orden","-Arena")} freigeben</button><button class="btn" data-act="back">Zurück</button></div><p class="msg">${msg}</p>`,{name:"stampP",onBack:()=>closePanel(),onAct:a=>{
+    if(a==="back") closePanel();
+    if(a==="stamp"){ const r=doStamp(false); S.unlocked={...(S.unlocked||{}),[nextArena()]:true}; save(); hud(); closePanel(); say("Herr Emmenegger",[`Blatt gesehen! ${r.n} Fehler erledigt, +${r.c} Münzen.`]); }
   }});
 }
 const SHOP=[
@@ -1448,7 +1725,7 @@ function shop(msg=""){
    ${SHOP.map(g=>`<h3>${g.cat}</h3><div class="list">${g.items.map(it=>{ const own=!it.k&&OWN(it.id); return `<div class="item ${own?"done":""}"><div class="grow"><b>${it.n}</b>${it.k?` <span class="tag">${S.items[it.id]||0}×</span>`:""}${it.d?`<br><small>${it.d}</small>`:""}</div><b>${it.p}</b><button class="btn" data-act="buy:${it.id}" ${own||S.coins<it.p?"disabled":""}>${own?"gekauft":"Kaufen"}</button></div>`; }).join("")}</div>`).join("")}
    <div class="col" style="margin-top:.6em"><button class="btn" data-act="close">Raus</button></div>`,{name:"shop",onAct:a=>{
     if(a==="close") return closePanel(); if(!a.startsWith("buy:")) return;
-    const it=SHOP.flatMap(g=>g.items).find(x=>x.id===a.slice(4)); if(S.coins<it.p) return;
+    const it=SHOP.flatMap(g=>g.items).find(x=>x.id===a.slice(4)); if(S.coins<it.p) return shop(S.coins<0?"Du bist im Minus – zuerst Münzen verdienen!":"Dafür hast du zu wenig Münzen.");
     S.coins-=it.p; if(it.k) S.items[it.id]=(S.items[it.id]||0)+1; else S.owned.push(it.id); save(); hud(); shop(`${it.n} gekauft!`);
   }});
 }
@@ -1640,10 +1917,11 @@ async function battleLoop(){
     else if(c===2){ if(await catchCmd()) return; }
     else if(c===3){ if(await switchMon(false)) return; }
     else if(c===4){
-      if(B.kind!=="wild"){ await bmsg("Vor einem Trainer kannst du nicht fliehen!"); continue; }
-      $("#bText").textContent="Willst du wirklich fliehen? Du bekommst dann keine Münzen.";
-      const y=await bmenu([{label:"Ja, fliehen"},{label:"Nein, weiterkämpfen"}],{start:1,escIdx:1});
-      if(y===0){ await bmsg("Du bist entkommen!"); endBattle(); return; }
+      const cost=B.kind==="wild"?0:B.kind==="boss"?50:30;
+      $("#bText").textContent=cost?`Willst du wirklich fliehen? Das kostet dich ${cost} Münzen – auch wenn du dann im Minus bist.`:"Willst du wirklich fliehen? Du bekommst dann keine Münzen.";
+      const y=await bmenu([{label:cost?`Ja, fliehen (−${cost} Münzen)`:"Ja, fliehen"},{label:"Nein, weiterkämpfen"}],{start:1,escIdx:1});
+      if(y===0){ if(cost){ S.coins-=cost; if(B.tid) FLED.add(B.tid); await bmsg(`Du bist geflohen und hast ${cost} Münzen verloren.${S.coins<0?` Du hast jetzt ${S.coins} Münzen – du bist im Minus!`:""} Heile dein Team und versuch es nochmals!`); }
+        else await bmsg("Du bist entkommen!"); endBattle(); save(); hud(); return; }
     }
   }
 }
@@ -1987,7 +2265,7 @@ async function evolve(m,to){
 async function lose(){
   const lost=Math.min(20,Math.floor(S.coins*.1)); S.coins-=lost; healAll();
   S.pos={x:AREA.heal.x,y:AREA.heal.y,dir:"down",area:AREA.id}; placePlayer();
-  if(BUILD.some(b=>b.id==="stube")){ INSIDE={id:"stube",out:{x:AREA.heal.x,y:AREA.heal.y},door:[AREA.heal.x,AREA.heal.y-1]}; ROOMT=performance.now(); }
+  if(BUILD.some(b=>b.id==="stube")) enterRoomDirect("stube",{x:AREA.heal.x,y:AREA.heal.y},[AREA.heal.x,AREA.heal.y-1],null,null,null,true);
   endBattle(); say("Rechenstube",[`${monName()} war erschöpft … Du wachst in der Rechenstube auf.`,`Du hast ${lost} Münzen verloren. Schau doch mal in dein Fehlerheft!`]);
 }
 function endBattle(){ $("#battle").classList.remove("show"); $("#scene").classList.remove("task"); BU.state="idle"; B=null; mode="world"; save(); hud(); }
@@ -1999,7 +2277,6 @@ function logError(t,user){ S.errors.push({id:Date.now()+"-"+ri(0,999),t:Date.now
 const healAll=()=>{ S.team.forEach(m=>m.hp=m.maxhp); };
 function TUTORIAL(){ const z=monName(); return [
   `Willkommen in Kalkulia, ${S.name}! ${z} ist ja herzig! Ich erkläre dir kurz, wie alles funktioniert.`,
-  "Übrigens: Für die Aufgaben darfst du einen Taschenrechner benutzen. Halte auch Papier und Stift bereit!",
   "Im hohen Gras leben wilde Zahlinge. Läufst du hindurch, greift dich manchmal einer an.",
   `Im Kampf wählst du eine Attacke. Jede Attacke stellt dir eine Rechenaufgabe. Stufe 1 ist einfach, Stufe 3 ist schwierig, macht aber viel mehr Schaden!`,
   `Rechnest du richtig, greift ${z} an. Rechnest du falsch, geht dein Angriff daneben, und die Aufgabe landet in deinem Fehlerheft.`,
@@ -2008,12 +2285,12 @@ function TUTORIAL(){ const z=monName(); return [
   `Für Siege bekommst du Münzen und Erfahrung. ${z} steigt im Level, lernt neue Attacken und entwickelt sich irgendwann sogar!`,
   "Wilde Zahlinge kannst du fangen! Schwäche sie zuerst mit Attacken unter die Hälfte ihrer KP, dann wählst du FANGEN und wirfst ein Würfelnetz. Ob es klappt, ist Glückssache! Manche Zahlinge im Gras sind übrigens schon etwas erschöpft.","Gefangene Zahlinge kommen in dein Team (bis zu vier). Im Zahldex siehst du, welche du schon hast.",
   "Im Laden gibt es Heiltränke, Formel-Rollen, Glücksmünzen, Würfelnetze und coole Kleider. Die Verkäuferin erklärt dir alles.",
-  "In der Rechenstube heilst du dein Team und druckst dein Fehlerheft aus. Verbessere es auf Papier und bring es deiner Lehrperson.",
+  "In der Rechenstube druckst du dein Fehlerheft aus und ruhst dich auf dem Sofa aus. Herr Emmenegger zeigt dir deinen Lernfortschritt, und Frau Müller hat Formelblätter zu jedem Thema. Zuhause kannst du dich auch im Bett ausruhen.",
   "Dein Ziel: Besiege die zwei Trainer auf dem Formenweg und dann Prof. Polygon in der Formen-Arena. In die Arena kommst du erst, wenn deine Lehrperson dein verbessertes Fehlerblatt gesehen und dich freigeschaltet hat!",
   "Steuerung: Pfeiltasten laufen, Enter sprechen und bestätigen, Esc zurück, M öffnet das Menü. Dort findest du auch diese Spielanleitung. Viel Glück!"]; }
 function guide(){
   openPanel(`<h2>Spielanleitung</h2><div class="guide">
-   <h3>Ziel</h3><p>Besiege in jedem Gebiet die zwei Trainer und dann die Arenaleitung. Für jede Arena gibt es einen Orden: Formen-Arena (Geometrie) in Nullingen, Einheiten-Arena im Einheiten-Tal, Dreisatz-Arena auf der Dreisatz-Insel und zum Schluss die Champion-Halle auf dem Champion-Gipfel, wo alle Themen gemischt vorkommen. Ins Tal kommst du zu Fuss, auf die Insel mit dem Boot von Kapitänin Wella und auf den Gipfel mit der Zahnradbahn von Kondukteur Bruno. Wer Champion wird, wird vom Weihnachtsschlitten abgeholt!</p><h3>Heilen</h3><p>Dein Team heilst du in der Rechenstube. Die gibt es in jedem Gebiet.</p>
+   <h3>Ziel</h3><p>Besiege in jedem Gebiet die zwei Trainer und dann die Arenaleitung. Für jede Arena gibt es einen Orden: Formen-Arena (Geometrie) in Nullingen, Einheiten-Arena im Einheiten-Tal, Dreisatz-Arena auf der Dreisatz-Insel und zum Schluss die Champion-Halle auf dem Champion-Gipfel, wo alle Themen gemischt vorkommen. Ins Tal kommst du zu Fuss, auf die Insel mit dem Boot von Kapitänin Wella und auf den Gipfel mit der Zahnradbahn von Kondukteur Bruno. Wer Champion wird, wird vom Weihnachtsschlitten abgeholt!</p><h3>Heilen</h3><p>Dein Team heilst du auf dem Sofa in der Rechenstube (gibt es in jedem Gebiet) oder zuhause in Nullingen im Bett. In der Rechenstube stehen ausserdem der Computer und der Drucker für dein Fehlerheft. Herr Emmenegger zeigt dir deinen Lernfortschritt, Frau Müller hat Formelblätter zu jedem Thema.</p><h3>Fliehen</h3><p>Vor wilden Zahlingen kannst du gratis fliehen. Vor Trainern kostet es 30 Münzen, in der Arena 50 – auch wenn du dann ins Minus rutschst.</p><h3>Tageszeit und Töne</h3><p>Im Menü (M) stellst du Tag, Abend, Nacht oder «wie draussen» ein. Nachts leuchten die Laternen. Töne kannst du ebenfalls im Menü einschalten.</p>
    <h3>Kämpfen</h3><p>Wähle KAMPF und eine Attacke. Stufe 1 bringt eine einfache Aufgabe, Stufe 2 eine mittlere, Stufe 3 eine schwierige. Je schwieriger, desto mehr Schaden. Rechnest du richtig, greift dein Zahling an. Danach greift der Gegner an, und du wehrst dich mit einer kurzen Abwehr-Frage (Richtig/Falsch, eine Antwort auswählen oder mehrere ankreuzen). Läuft ein Timer, gibt eine schnelle richtige Antwort einen Volltreffer. Kommas darfst du als Komma oder Punkt schreiben. <b>Ein Taschenrechner ist erlaubt.</b></p>
    <h3>Schwierigkeit</h3><p>Kreise kommen erst nach 8 richtigen Geometrie-Aufgaben, der Satz des Pythagoras nach 12 und Oberflächen nach 20 (nur mit Stufe-3-Attacken). Auf der Dreisatz-Insel kommt der umgekehrte Dreisatz (je mehr, desto weniger) erst nach 10 richtigen Dreisatz-Aufgaben – und in der Arena. Nach drei richtigen Antworten hintereinander wird es automatisch eine Stufe schwieriger. Nach zwei Fehlern hintereinander wird die nächste Aufgabe zum gleichen Thema leichter, und die Formel steht dabei. Stärkere Attacken bringen immer schwierigere Aufgaben.</p>
    <h3>Level, Attacken und Entwicklung</h3><p>Siege bringen Erfahrung (EP). Mit jedem Level wird dein Zahling stärker. Auf Level 7, 10 und 15 lernt dein erster Zahling neue Attacken, auf Level 12 und 20 entwickelt er sich. Auch gefangene Zahlinge entwickeln sich einmal: die vom Formenweg auf Level 16, die aus dem Einheiten-Tal auf Level 20 und die von der Dreisatz-Insel auf Level 24. Dabei lernen sie eine starke Spezialattacke. Erfahrung bekommt immer der vorderste Zahling im Team.</p>
@@ -2041,7 +2318,7 @@ function dexPanel(){
 
 /* ---------- Weihnachtsfinale ---------- */
 function checkFinale(){
-  if(S.settings.finale&&!S.flags.finaleMsg&&S.created){ S.flags.finaleMsg=1; NOTICES.push("Die Weihnachtsferien stehen vor der Tür! Geh nach Hause nach Nullingen – beim Weihnachtsbaum neben deinem Haus wartet eine Überraschung."); if(AREA.id==="dorf") loadArea("dorf"); saveLocal(); }
+  if(S.settings.finale&&!S.flags.finaleMsg&&S.created){ S.flags.finaleMsg=1; NOTICES.push("Die Weihnachtsferien stehen vor der Tür! Geh nach Hause nach Nullingen – beim Weihnachtsbaum neben deinem Haus wartet eine Überraschung.","Tipp: Im Menü (Taste M) kannst du jetzt Weihnachtsmusik einschalten – aber nur mit Kopfhörern!"); if(AREA.id==="dorf"&&!ROOM) loadArea("dorf"); saveLocal(); }
 }
 function xmasTree(){
   say("Weihnachtsbaum",["Ein wunderschön geschmückter Weihnachtsbaum! Ganz oben funkelt ein goldener Stern …","Plötzlich hörst du Glöckchen in der Luft – da kommt etwas angeflogen!"],()=>finale());
@@ -2067,6 +2344,15 @@ async function finale(){
     c.fillStyle="#8b5a2b"; c.fillRect(x+30,y+6,34,1); reindeer(x+38,y+2,false,t); reindeer(x+60,y-2,true,t+.3); c.fillRect(x+52,y+3,10,1);
     drawChar(c,x+4,y-12,S.look,"right",0); imgs.forEach((im,i)=>{ if(im.complete) c.drawImage(im,x+15+i*6,y-6-(i%2)*3,12,12); });
     c.fillStyle="#c0392b"; c.fillRect(x,y,30,9); c.fillRect(x-3,y-6,6,15); c.fillStyle="#e74c3c"; c.fillRect(x+2,y+1,26,3); c.fillStyle="#ffd166"; c.fillRect(x-2,y+11,34,2); c.fillRect(x+30,y+9,3,3); c.fillRect(x+4,y+9,2,2); c.fillRect(x+24,y+9,2,2); };
+  const santa=(c,x,y,t)=>{ const R="#c0392b",W="#f8f8f0",wave=Math.sin(t*5)>0;
+    c.fillStyle="#7a4b2a"; c.fillRect(x+17,y+17,9,10); c.fillStyle="#5a3518"; c.fillRect(x+19,y+15,5,3);
+    c.fillStyle=R; c.fillRect(x+2,y+13,16,10); c.fillRect(x,y+14,3,7); c.fillStyle=W; c.fillRect(x,y+20,3,2);
+    if(wave){ c.fillStyle=R; c.fillRect(x+17,y+6,3,8); c.fillStyle=W; c.fillRect(x+17,y+4,3,2); } else { c.fillStyle=R; c.fillRect(x+17,y+13,3,7); c.fillStyle=W; c.fillRect(x+17,y+19,3,2); }
+    c.fillStyle="#1d1b26"; c.fillRect(x+2,y+19,16,2); c.fillStyle="#ffd166"; c.fillRect(x+9,y+19,2,2);
+    c.fillStyle=R; c.fillRect(x+4,y+23,5,4); c.fillRect(x+11,y+23,5,4); c.fillStyle="#1d1b26"; c.fillRect(x+3,y+26,6,2); c.fillRect(x+11,y+26,6,2);
+    c.fillStyle="#ffd7b5"; c.fillRect(x+5,y+7,10,5); c.fillStyle="#1d1b26"; c.fillRect(x+7,y+8,1,1); c.fillRect(x+12,y+8,1,1); c.fillStyle="#f28b82"; c.fillRect(x+6,y+10,1,1); c.fillRect(x+13,y+10,1,1);
+    c.fillStyle=W; c.fillRect(x+4,y+11,12,6); c.fillRect(x+6,y+17,8,2); c.fillRect(x+3,y+5,14,2);
+    c.fillStyle=R; c.fillRect(x+5,y+2,10,3); c.fillRect(x+8,y,7,2); c.fillRect(x+14,y+1,3,2); c.fillStyle=W; c.fillRect(x+16,y,3,3); };
   const pole=t=>{ sky(t); hills(0,"#2f3c6e",true,100,30,70); c.save(); c.translate(0,-28); c.fillStyle="#eef5ff"; c.fillRect(0,132,240,80); c.fillStyle="#d7e6fb"; for(let x=0;x<240;x+=12) c.fillRect(x,132+(x%24?2:0),12,2);
     const tx=58; c.fillStyle="#5a3a1a"; c.fillRect(tx-3,120,6,14); [[34,24,0],[28,18,16],[22,13,30],[15,8,42]].forEach(([w,h,y0])=>{ c.fillStyle="#1f6b33"; c.beginPath(); c.moveTo(tx-w,124-y0); c.lineTo(tx+w,124-y0); c.lineTo(tx,124-y0-h-8); c.fill(); });
     c.fillStyle="#ffd166"; c.fillRect(tx-3,62,6,6); c.fillRect(tx-5,64,10,2); c.fillRect(tx-1,60,2,10);
@@ -2075,6 +2361,7 @@ async function finale(){
     for(let y=74;y<134;y+=6){ c.fillStyle=(y/6)%2?"#d64045":"#fff"; c.fillRect(196,y,6,6); } c.fillStyle="#ffd166"; c.fillRect(194,70,10,5);
     c.fillStyle="#8b5a2b"; c.fillRect(158,84,40,12); c.fillStyle="#f6e3bd"; c.fillRect(159,85,38,10); c.fillStyle="#1d1b26"; c.font="bold 7px Arial"; c.textAlign="center"; c.fillText("NORDPOL",178,93);
     c.save(); c.translate(118,104); c.scale(1.6,1.6); drawChar(c,0,0,S.look,"down",0); c.restore();
+    c.save(); c.translate(150,99); c.scale(1.6,1.6); santa(c,0,0,t); c.restore();
     imgs.forEach((im,i)=>{ if(im.complete) c.drawImage(im,92+[0,52,74][i],[110,112,108][i],20,20); });
     c.restore(); sleigh(150+Math.sin(t)*2,40+Math.sin(t*1.3)*3,t); };
   function frame(now){
@@ -2085,6 +2372,7 @@ async function finale(){
   }
   requestAnimationFrame(frame);
   await sleep(9800);
+  await finMsg("Santa Claus hat schon auf dich gewartet: «Ho, ho, ho – willkommen am Nordpol!»");
   if(S.badges.includes("champion")) await finMsg(`Du bist Champion von Kalkulia, ${S.name}! Der Schlitten bringt dich direkt zum Nordpol.`);
   await finMsg(`Frohe Weihnachten und schöne Ferien, ${S.name}!`);
   await finMsg(`Du hast es dir verdient! ${S.stats.correct} Aufgaben richtig gelöst, ${S.badges.length} von 4 Orden gesammelt und ${S.team.length} Zahling${S.team.length>1?"e":""} im Team.`);
@@ -2092,7 +2380,7 @@ async function finale(){
   S.flags.finaleDone=1; save();
   openPanel(`<h2>Frohe Weihnachten!</h2><p>Hol dir deine Urkunde. Im Druckfenster kannst du sie auch «Als PDF speichern».</p><div class="col"><button class="btn" data-act="cert">Urkunde drucken</button><button class="btn" data-act="back">Zurück nach Nullingen</button></div>`,{name:"finEnd",closable:false,onBack:()=>{},onAct:a=>{
     if(a==="cert") printCert();
-    if(a==="back"){ run=false; ov.classList.remove("show"); INSIDE=null; closePanel(); S.pos={x:3,y:27,dir:"left",area:"dorf"}; placePlayer(); save(); }
+    if(a==="back"){ run=false; ov.classList.remove("show"); INSIDE=null; ROOM=null; OBJS=[]; closePanel(); S.pos={x:3,y:27,dir:"left",area:"dorf"}; placePlayer(); save(); }
   }});
 }
 function certHTML(){
@@ -2119,49 +2407,57 @@ const TRACKS={
     bass:[["C3",2],["G2",2],["A2",2],["E2",2],["F2",2],["C3",2],["G2",2],["C3",2]]},
   battle:{bpm:150,lead:[["A4",.25],["C5",.25],["E5",.5],["A5",.5],["G5",.25],["E5",.25],["F5",.5],["E5",.5],["D5",.5],["C5",.5],["B4",.5],["C5",.5],["D5",.5],["E5",1],[null,.5],["E5",.5]],
     bass:[["A2",.5],["A2",.5],["A3",.5],["A2",.5],["A2",.5],["A2",.5],["A3",.5],["A2",.5],["F2",.5],["F2",.5],["F3",.5],["F2",.5],["G2",.5],["G2",.5],["G3",.5],["G2",.5]]},
-  xmas:{bpm:132,lead:[["E5",1],["E5",1],["E5",2],["E5",1],["E5",1],["E5",2],["E5",1],["G5",1],["C5",1.5],["D5",.5],["E5",4],["F5",1],["F5",1],["F5",1.5],["F5",.5],["F5",1],["E5",1],["E5",1],["E5",.5],["E5",.5],["E5",1],["D5",1],["D5",1],["E5",1],["D5",2],["G5",2]],
+  xmas:{bpm:132,wave:"triangle",lead:[["E5",1],["E5",1],["E5",2],["E5",1],["E5",1],["E5",2],["E5",1],["G5",1],["C5",1.5],["D5",.5],["E5",4],["F5",1],["F5",1],["F5",1.5],["F5",.5],["F5",1],["E5",1],["E5",1],["E5",.5],["E5",.5],["E5",1],["D5",1],["D5",1],["E5",1],["D5",2],["G5",2]],
     bass:[["C3",4],["C3",4],["C3",4],["C3",4],["F2",4],["C3",4],["G2",4],["G2",4]]}
 };
+// Stille Nacht (Franz Xaver Gruber, 1818 – gemeinfrei), in Achteln à 0,75 Schläge, an Jingle Bells angehängt
+(()=>{ const E=.75, sn=[["G4",3],["A4",1],["G4",2],["E4",6],["G4",3],["A4",1],["G4",2],["E4",6],["D5",4],["D5",2],["B4",6],["C5",4],["C5",2],["G4",6],
+  ["A4",4],["A4",2],["C5",3],["B4",1],["A4",2],["G4",3],["A4",1],["G4",2],["E4",6],["A4",4],["A4",2],["C5",3],["B4",1],["A4",2],["G4",3],["A4",1],["G4",2],["E4",6],
+  ["D5",4],["D5",2],["F5",3],["D5",1],["B4",2],["C5",6],["E5",6],["C5",3],["G4",1],["E4",2],["G4",3],["F4",1],["D4",2],["C4",12],[null,6]];
+  const sb=["C3","C3","C3","C3","G2","G2","C3","C3","F2","F2","C3","C3","F2","F2","C3","C3","G2","G2","C3","C3","C3","G2","C3","C3","C3"].map(n=>[n,6*E]);
+  const X=TRACKS.xmas, ll=X.lead.reduce((a,n)=>a+n[1],0), bl=X.bass.reduce((a,n)=>a+n[1],0); if(bl<ll) X.bass.push([null,ll-bl]);
+  X.lead=X.lead.concat([[null,2]],sn.map(([n,d])=>[n,d*E])); X.bass=X.bass.concat([[null,2]],sb); })();
 function muInit(){ if(MU.ctx) return; const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; MU.ctx=new AC(); MU.gain=MU.ctx.createGain(); MU.gain.gain.value=.05; MU.gain.connect(MU.ctx.destination); }
 function tone(freq,t,dur,type,vol=1){ if(!freq) return; const o=MU.ctx.createOscillator(), g=MU.ctx.createGain(); o.type=type; o.frequency.value=freq; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur*.95); o.connect(g); g.connect(MU.gain); o.start(t); o.stop(t+dur); }
 function schedule(){
   const T=TRACKS[MU.track]; if(!T||!MU.ctx) return; const beat=60/T.bpm, len=T.lead.reduce((a,n)=>a+n[1],0);
   while(MU.next<MU.ctx.currentTime+.4){
     const start=MU.next; let tt=start;
-    T.lead.forEach(([n,b])=>{ tone(NOTE(n),tt,b*beat*.9,"square",.55); tt+=b*beat; });
+    T.lead.forEach(([n,b])=>{ tone(NOTE(n),tt,b*beat*.9,T.wave||"square",T.wave?.9:.55); tt+=b*beat; });
     tt=start; T.bass.forEach(([n,b])=>{ tone(NOTE(n),tt,b*beat*.95,"triangle",.9); tt+=b*beat; });
     MU.next=start+len*beat;
   }
 }
 function playTrack(name){
+  if(!name){ MU.track=null; stopMusic(); return; }
   if(!MU.on){ MU.track=name; return; } muInit(); if(!MU.ctx) return; if(MU.ctx.state==="suspended") MU.ctx.resume();
   if(MU.track===name&&MU.timer) return; MU.track=name; clearInterval(MU.timer);
   MU.gain.gain.cancelScheduledValues(MU.ctx.currentTime); MU.gain.gain.setValueAtTime(0,MU.ctx.currentTime); MU.gain.gain.linearRampToValueAtTime(.05,MU.ctx.currentTime+.3);
   MU.next=MU.ctx.currentTime+.35; schedule(); MU.timer=setInterval(schedule,150);
 }
 function stopMusic(){ clearInterval(MU.timer); MU.timer=null; if(MU.ctx) MU.gain.gain.setValueAtTime(0,MU.ctx.currentTime); }
-function setMusic(on){ MU.on=on; S.flags.music=on?1:0; saveLocal(); if(on){ const t=MU.track||"world"; MU.track=null; playTrack(t); } else stopMusic(); }
-function sfx(kind){ if(!MU.on||!MU.ctx) return; const t=MU.ctx.currentTime+.01;
+function setMusic(on){ MU.on=on; S.flags.music=on?1:0; saveLocal(); if(on){ muInit(); if(MU.ctx&&MU.ctx.state==="suspended") MU.ctx.resume(); const t=musicFor(mode); MU.track=null; playTrack(t); } else stopMusic(); }
+function sfx(kind){ if(!MU.on) return; muInit(); if(!MU.ctx) return; if(MU.ctx.state==="suspended") MU.ctx.resume(); const t=MU.ctx.currentTime+.01;
   if(kind==="ok") [["C5",0],["E5",.08],["G5",.16],["C6",.24]].forEach(([n,d])=>tone(NOTE(n),t+d,.12,"square",.7));
   if(kind==="tick") tone(NOTE("C6"),t,.04,"square",.25);
   if(kind==="door") [["G4",0],["D5",.07]].forEach(([n,d])=>tone(NOTE(n),t+d,.08,"triangle",.5));
   if(kind==="bad") [["E4",0],["C4",.12],["A3",.24]].forEach(([n,d])=>tone(NOTE(n),t+d,.16,"square",.7));
 }
-function musicFor(m){ return m==="battle"?"battle":m==="fin"?"xmas":"world"; }
+function musicFor(m){ return m==="fin"||XMAS()?"xmas":null; }
 let lastMode=null;
-setInterval(()=>{ if(mode!==lastMode){ lastMode=mode; if(MU.on) playTrack(musicFor(mode)); else MU.track=musicFor(mode); } },300);
-addEventListener("keydown",()=>{ if(S.flags&&S.flags.music&&!MU.on){ MU.on=true; playTrack(musicFor(mode)); } },{once:false});
+setInterval(()=>{ const k=mode+"|"+XMAS(); if(k!==lastMode){ lastMode=k; if(MU.on) playTrack(musicFor(mode)); else MU.track=musicFor(mode); } },300);
+addEventListener("keydown",()=>{ if(S.flags&&S.flags.music&&!MU.on){ MU.on=true; muInit(); playTrack(musicFor(mode)); } },{once:false});
 
 /* ---------- Steuerungskarte & Auto-Lauf ---------- */
 const KEYS_HTML=`<div class="keysgrid">
-  <div><span class="kb">↑</span><span class="kb">↓</span><span class="kb">←</span><span class="kb">→</span></div><div>laufen und in Menüs auswählen</div>
-  <div><span class="kb wide">Enter</span></div><div>sprechen, bestätigen, weiterlesen</div>
+  <div><span class="kb">↑</span><span class="kb">↓</span><span class="kb">←</span><span class="kb">→</span> <small>oder</small> <span class="kb">W</span><span class="kb">A</span><span class="kb">S</span><span class="kb">D</span></div><div>laufen und in Menüs auswählen</div>
+  <div><span class="kb wide">Enter</span> <small>oder</small> <span class="kb wide">Leertaste</span></div><div>sprechen, bestätigen, weiterlesen</div>
   <div><span class="kb wide">Esc</span></div><div>zurück</div>
-  <div><span class="kb">M</span></div><div>Menü (Team, Zahldex, Spielanleitung, Musik)</div></div>`;
+  <div><span class="kb">M</span></div><div>Menü (Team, Zahldex, Spielanleitung, Tageszeit, Töne)</div></div>`;
 function controlsCard(next){
   openPanel(`<h2>So spielst du Kalkulia</h2>${KEYS_HTML}
    <p class="calc"><b>Taschenrechner erlaubt!</b> Du darfst für die Aufgaben einen Taschenrechner benutzen. Halte Papier und Stift bereit.</p>
-   <p class="muted">Mit Kopfhörern kannst du im Menü (Taste M) die Musik einschalten.</p>
+   <p class="muted">Im Menü (Taste M) kannst du Töne einschalten (mit Kopfhörern!). In der Weihnachtszeit gibt es dort auch Weihnachtsmusik.</p>
    <div class="col"><button class="btn" data-act="go">Verstanden, los geht's!</button></div>`,{name:"keys",closable:false,nohelp:true,onBack:()=>{},onAct:a=>{ if(a==="go"){ S.flags.keys=1; saveLocal(); next(); } }});
 }
 const AUTO={q:[],done:null};
@@ -2180,7 +2476,14 @@ function openMenu(){
     <div class="row"><img src="${monSpr()}" style="width:4.5em;image-rendering:pixelated" alt=""><div><b>${monName()}</b> Lv ${m.lvl}<br>KP ${m.hp}/${m.maxhp} · EP ${m.xp}/${xpNeed(m.lvl)}<br><small>${ATKS[lineOf(m)].map(a=>a.lv<=m.lvl?`${a.name} (St. ${a.st})`:`??? ab Lv ${a.lv}`).join(" · ")}</small></div></div>
     <p>Tasche: ${S.items.trank} Heiltrank · ${S.items.supertrank} Supertrank · ${S.items.formel} Formel-Rolle · ${S.items.sanduhr} Sanduhr · ${S.items.gluck} Glücksmünze</p>
    </div><div style="flex:1"><h3>Ordenskasten</h3><div class="list">${ARENA_ORDER.map(id=>`<div class="item ${S.badges.includes(id)?"":"done"}">${badgeSVG(id,!S.badges.includes(id)).replace("<svg",'<svg class="bmini"')}<div class="grow"><b>${BADGES[id].name}</b> <small>${BADGES[id].topic}</small></div></div>`).join("")}</div></div></div>
-   <div class="col" style="margin-top:.5em"><button class="btn" data-act="close">Weiterspielen</button><button class="btn" data-act="music">Musik: ${MU.on?"an":"aus"}</button><button class="btn" data-act="team">Team</button><button class="btn" data-act="dex">Zahldex</button><button class="btn" data-act="guide">Spielanleitung</button>${S.flags.finaleDone?`<button class="btn" data-act="cert">Urkunde drucken</button>`:""}${ONLINE?`<button class="btn" data-act="logout">Abmelden</button>`:`<button class="btn" data-act="teacher">Lehrerbereich</button>`}</div>`,{name:"menu",onAct:a=>{ if(a==="logout") logout(); if(a==="music"){ setMusic(!MU.on); openMenu(); } if(a==="close") closePanel(); if(a==="team") teamPanel(); if(a==="dex") dexPanel(); if(a==="guide") guide(); if(a==="cert") printCert(); if(a==="teacher") pinGate(teacherPanel,openMenu); }});
+   <div class="col" style="margin-top:.5em"><button class="btn" data-act="close">Weiterspielen</button><button class="btn" data-act="tod">Tageszeit: ${({tag:"Tag",abend:"Abend",nacht:"Nacht",auto:"wie draussen"})[S.flags.tod||"tag"]}</button><button class="btn" data-act="music">${XMAS()?"Töne & Weihnachtsmusik":"Töne"}: ${MU.on?"an":"aus"}</button>${TESTMODE()?`<button class="btn" data-act="warp">Schnellreise (Testkonto)</button>`:""}<button class="btn" data-act="team">Team</button><button class="btn" data-act="dex">Zahldex</button><button class="btn" data-act="guide">Spielanleitung</button>${S.flags.finaleDone?`<button class="btn" data-act="cert">Urkunde drucken</button>`:""}${ONLINE?`<button class="btn" data-act="logout">Abmelden</button>`:`<button class="btn" data-act="teacher">Lehrerbereich</button>`}</div>`,{name:"menu",onAct:a=>{ if(a==="logout") logout(); if(a==="music"){ setMusic(!MU.on); openMenu(); } if(a==="tod"){ const o=["tag","abend","nacht","auto"]; S.flags.tod=o[(o.indexOf(S.flags.tod||"tag")+1)%4]; save(); openMenu(); } if(a==="warp") warpPanel(); if(a==="close") closePanel(); if(a==="team") teamPanel(); if(a==="dex") dexPanel(); if(a==="guide") guide(); if(a==="cert") printCert(); if(a==="teacher") pinGate(teacherPanel,openMenu); }});
+}
+const TESTMODE=()=>!ONLINE||(SESSION&&SESSION.code==="test");
+function warpPanel(){
+  const L=[["dorf","Nullingen & Formenweg",{x:22,y:27}],["tal","Einheiten-Tal",{x:21,y:21}],["insel","Dreisatz-Insel",{x:19,y:23}],["gipfel","Champion-Gipfel",{x:19,y:26}]];
+  openPanel(`<h2>Schnellreise</h2><p class="muted">Nur fürs Testkonto: direkt in jedes Gebiet reisen. In die Arenen kommst du trotzdem erst nach den Trainern und der Freigabe durch die Lehrperson.</p>
+   <div class="col">${L.map(([id,n])=>`<button class="btn" data-act="go:${id}" ${AREA.id===id?"disabled":""}>${n}</button>`).join("")}<button class="btn" data-act="close">Zurück</button></div>`,{name:"warp",onAct:a=>{
+    if(a==="close") return openMenu(); if(!a.startsWith("go:")) return; const it=L.find(l=>l[0]===a.slice(3)); closePanel(); ROOM=null; OBJS=[]; changeArea(it[0],it[2].x,it[2].y,"down"); }});
 }
 function teacherPanel(msg=""){
   const s=S.settings; let resetArmed=false;
