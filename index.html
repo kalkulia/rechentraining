@@ -2236,15 +2236,21 @@ async function syncNow(){
   syncing=false; return ok;
 }
 setInterval(()=>{ if(ONLINE&&SESSION&&S.created&&mode==="world") syncNow(); },40000);
-function applyServer(r){
+function applyServer(r,fromLogin){
   if(r.settings){ S.settings={...S.settings,...r.settings}; checkFinale(); }
-  let applied=false;
+  let applied=false, resetId=0;
   (r.cmds||[]).sort((a,b)=>a.id-b.id).forEach(c=>{
     if(c.id<=(S.cmdAck||0)) return; S.cmdAck=c.id; applied=true;
+    if(c.type==="reset"){ resetId=c.id; return; }
     if(c.type==="stamp"){ const x=doStamp(c.mode==="all"); NOTICES.push(x.n?`Deine Lehrperson hat dein Fehlerblatt abgestempelt! ${x.n} Fehler sind erledigt, und du bekommst ${x.c} Münzen.`:"Deine Lehrperson hat abgestempelt, aber du hattest keine offenen Fehler."); }
     if(c.type==="unlock"){ const x=doStamp(false); S.unlocked={...(S.unlocked||{}),[c.arena]:true}; NOTICES.push(`Deine Lehrperson hat dir die ${({formen:"Formen-Arena",einheiten:"Einheiten-Arena",dreisatz:"Dreisatz-Arena",champion:"Champion-Arena"})[c.arena]||"Arena"} freigegeben!${x.n?` ${x.n} Fehler sind erledigt, und du bekommst ${x.c} Münzen.`:""}`); }
     if(c.type==="coins"){ S.coins+=c.n||0; NOTICES.push(`Deine Lehrperson schenkt dir ${c.n} Münzen!${c.why?" ("+c.why+")":""}`); }
   });
+  if(resetId){ // Lehrperson hat den Spielstand zurückgesetzt
+    try{ localStorage.removeItem(saveKey); }catch(e){}
+    const st=S.settings; S=freshState(); S.settings=st; S.cmdAck=resetId; NOTICES.length=0; saveLocal();
+    if(!fromLogin){ mode="cut"; setTimeout(async()=>{ await syncNow(); location.reload(); },60); return; }
+  }
   hud(); if(applied) save(); else saveLocal();
 }
 function logout(){ try{ localStorage.removeItem("kalkulia_session"); }catch(e){} location.reload(); }
@@ -2274,7 +2280,7 @@ async function doLogin(saved){
   let local=null; try{ local=JSON.parse(localStorage.getItem(saveKey)); }catch(e){}
   const pickD=(server&&local)?((local.savedAt||0)>(server.savedAt||0)?local:server):(server||local);
   if(pickD) normState(pickD);
-  applyServer({settings:r.settings,cmds:r.cmds});
+  applyServer({settings:r.settings,cmds:r.cmds},true);
   placePlayer(); if(mode==="panel") closePanel(); hud(); setNet("ok");
   if(!S.created) controlsCard(()=>creator(true)); else say("",[`Willkommen zurück, ${S.name}!`]);
 }
