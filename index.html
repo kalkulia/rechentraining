@@ -47,6 +47,9 @@ body{display:flex;align-items:center;justify-content:center;overflow:hidden}
 .item .grow{flex:1}
 .item small{color:#555}
 .item .btn{margin-left:1.3em}
+.btn.eye{padding:.2em .45em;margin-left:-.2em;line-height:0;vertical-align:middle}
+.btn.eye.on{background:var(--gold)}
+.btn.eye.cur::before{content:none}
 .done{opacity:.5}
 .tag{display:inline-block;font-size:.8em;font-weight:700;border-radius:.3em;padding:0 .35em;background:#b8f0c8;border:.12em solid var(--ink)}
 .tag.open{background:#ffd8a8}.tag.pr{background:#cfe3ff}
@@ -1044,11 +1047,12 @@ function printErrors(items,withSol){
      ${withSol?`<div class="sol"><b>Lösungsweg:</b><br>${st.join("<br>")}</div>`:`<div class="wl">Mein Lösungsweg:</div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ft">Mein Fehler war: ☐ falsche Formel &nbsp; ☐ Einheit &nbsp; ☐ Komma / Stellenwert &nbsp; ☐ Rechenfehler &nbsp; ☐ Aufgabe falsch gelesen</div>`}</div>`; }).join("")}`;
   setTimeout(()=>{ try{ window.print(); }catch(e){} },120);
 }
+function toggleEye(b){ const i=$("#"+b.dataset.for); const show=i.type==="password"; i.type=show?"text":"password"; b.classList.toggle("on",show); b.title=show?"Verbergen":"Anzeigen"; i.focus(); }
 function pinGate(onOk,onCancel){
-  openPanel(`<h2>Lehrer-PIN</h2><p>Diesen Teil darf nur deine Lehrperson öffnen.</p><div class="row"><input type="password" id="pin" autocomplete="off" data-act="pinfield"><button class="btn" data-act="go">Öffnen</button></div><p class="msg" id="pinMsg"></p>`,{name:"pin",onBack:()=>onCancel(),
+  openPanel(`<h2>Lehrer-PIN</h2><p>Diesen Teil darf nur deine Lehrperson öffnen.</p><div class="row"><input type="password" id="pin" autocomplete="off" data-act="pinfield"><button class="btn eye" data-act="eye" data-for="pin" title="PIN anzeigen" aria-label="PIN anzeigen"><svg viewBox="0 0 24 24" width="1.2em" height="1.2em" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg></button><button class="btn" data-act="go">Öffnen</button></div><p class="msg" id="pinMsg"></p>`,{name:"pin",onBack:()=>onCancel(),
     onMount:()=>setTimeout(()=>$("#pin").focus(),30),
     onKey:e=>{ if(e.target.id==="pin"&&e.key==="Enter"){ e.preventDefault(); PW.querySelector('[data-act="go"]').click(); return true; } if(e.target.id==="pin"&&e.key==="Escape"){ onCancel(); return true; } return false; },
-    onAct:a=>{ if(a==="pinfield") return $("#pin").focus(); if(a==="go"){ if($("#pin").value===TEACHER_PIN) onOk(); else { $("#pinMsg").textContent="Falscher PIN."; $("#pin").value=""; $("#pin").focus(); } } }});
+    onAct:(a,b)=>{ if(a==="eye") return toggleEye(b); if(a==="pinfield") return $("#pin").focus(); if(a==="go"){ if($("#pin").value===TEACHER_PIN) onOk(); else { $("#pinMsg").textContent="Falscher PIN."; $("#pin").value=""; $("#pin").focus(); } } }});
 }
 const nextArena=()=>ARENA_ORDER.find(a=>!S.badges.includes(a))||"champion";
 function doStamp(all){
@@ -1598,12 +1602,12 @@ function logout(){ try{ localStorage.removeItem("kalkulia_session"); }catch(e){}
 function loginPanel(msg=""){
   openPanel(`<h2>Kalkulia – Anmelden</h2><p>Melde dich gleich an wie bei der Übungsseite zur Ähnlichkeit (LU 8).</p>
    <div class="row"><b style="min-width:6em">Zugang</b><input id="lgC" type="text" autocomplete="off" placeholder="z. B. rap-emm" style="font:inherit;padding:.3em .5em;border:.15em solid var(--ink);border-radius:.35em"></div>
-   <div class="row"><b style="min-width:6em">Passwort</b><input id="lgP" type="password" inputmode="numeric" placeholder="TTMMJJ" style="font:inherit;padding:.3em .5em;border:.15em solid var(--ink);border-radius:.35em"></div>
+   <div class="row"><b style="min-width:6em">Passwort</b><input id="lgP" type="password" inputmode="numeric" placeholder="TTMMJJ" style="font:inherit;padding:.3em .5em;border:.15em solid var(--ink);border-radius:.35em"><button class="btn eye" data-act="eye" data-for="lgP" title="Passwort anzeigen" aria-label="Passwort anzeigen"><svg viewBox="0 0 24 24" width="1.2em" height="1.2em" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg></button></div>
    <p class="muted">Zugang: 3 Buchstaben Vorname + Bindestrich + 3 Buchstaben Nachname, zum Beispiel Raphael Emmenegger → rap-emm. Passwort: dein Geburtsdatum ohne Punkte, Jahr zweistellig (5. März 2011 → 050311).</p>
    <div class="col"><button class="btn" data-act="go">Anmelden</button></div><p class="msg" id="lgMsg">${msg}</p><p class="muted" style="text-align:right;margin-top:.8em">Für Lehrpersonen: <a href="lehrer.html">zur Lehrerseite</a></p>`,{name:"login",closable:false,noNav:true,nohelp:true,
     onMount:()=>setTimeout(()=>$("#lgC").focus(),50),
     onKey:e=>{ if(e.key==="Enter"){ e.preventDefault(); if(e.target.id==="lgC") $("#lgP").focus(); else doLogin(); return true; } if(e.key==="ArrowDown"&&e.target.id==="lgC"){ $("#lgP").focus(); return true; } if(e.key==="ArrowUp"&&e.target.id==="lgP"){ $("#lgC").focus(); return true; } return true; },
-    onAct:a=>{ if(a==="go") doLogin(); }});
+    onAct:(a,b)=>{ if(a==="go") doLogin(); if(a==="eye") toggleEye(b); }});
 }
 async function doLogin(saved){
   const code=saved?saved.code:$("#lgC").value.trim(), pw=saved?saved.pw:$("#lgP").value.trim();
