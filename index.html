@@ -210,8 +210,11 @@ table.gt td.na{background:#f0f0f0}
 @keyframes rcpop{from{transform:translateY(-.4em) scale(.4);opacity:0}to{transform:none;opacity:1}}
 .rcd{margin-top:1em;color:#cfe3ff;font-size:1.4em;font-weight:600;opacity:0;transition:opacity .25s}
 .rcn{margin-top:.2em;color:#fff;font-size:2.3em;font-weight:700;opacity:0;transform:scale(.8);transition:opacity .3s,transform .3s cubic-bezier(.2,1.6,.4,1);text-shadow:0 .08em 0 #000}
-.rcm{margin-top:.8em;width:20em;opacity:0;transition:opacity .3s}
-.rc.s2 .rcd,.rc.s3 .rcn,.rc.s3 .rcm{opacity:1}.rc.s3 .rcn{transform:none}
+.rcm{margin-top:.8em;width:20em;opacity:0;transition:opacity .3s,width .6s ease}
+.rc.mp .rcw,.rc.mp .rcd,.rc.mp .rcn{display:none}.rc.mp .rcm{width:min(40em,90%);opacity:1;margin-top:0}
+.rcm .flag.drop{opacity:0}.rcm .flag.drop.go{animation:flagdrop .7s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes flagdrop{0%{opacity:0;translate:0 -30px}60%{opacity:1}100%{opacity:1;translate:0 0}}
+.rc.s2 .rcd,.rc.s3 .rcn,.rc .rcm{opacity:1}.rc.s3 .rcn{transform:none}
 .rcm .tg{animation:rcpulse .7s ease-in-out infinite alternate}
 @keyframes rcpulse{to{r:9}}
 #trip{z-index:8;background:#000}
@@ -1602,22 +1605,38 @@ function muellerPanel(sel){
 }
 /* --- Regionswechsel: KALKULIA + «Du reist nach …» --- */
 const MAPPOS={dorf:[34,92,"Nullingen"],tal:[96,74,"Einheiten-Tal"],insel:[150,96,"Insel"],gipfel:[196,30,"Gipfel"]};
+const AREA_BADGE={dorf:"formen",tal:"einheiten",insel:"dreisatz",gipfel:"champion"}, MAPORD=["dorf","tal","insel","gipfel"];
 function miniMap(to,from){
-  const ord=["dorf","tal","insel","gipfel"], pts=ord.map(k=>MAPPOS[k]);
+  const pts=MAPORD.map(k=>MAPPOS[k]);
   let sv=`<rect x="0" y="0" width="240" height="120" rx="8" fill="#2a6fb5"/><path d="M0 60 Q40 40 80 52 Q120 66 120 120 H0 Z" fill="#7ec850"/><ellipse cx="150" cy="98" rx="24" ry="10" fill="#f2dfa6"/><ellipse cx="150" cy="95" rx="16" ry="7" fill="#7ec850"/>
     <path d="M150 120 L196 14 L240 70 L240 120 Z" fill="#8fa6c8"/><path d="M186 37 L196 14 L206 37 Z" fill="#fff"/><path d="M60 34 L80 12 L100 34 Z" fill="#5fae45"/>
-    <polyline points="${pts.map(p=>p[0]+","+p[1]).join(" ")}" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="5 4"/>`;
-  ord.forEach(k=>{ const [x,y,n]=MAPPOS[k], tg=k===to, fr=k===from; sv+=`<circle cx="${x}" cy="${y}" r="${tg?7:5}" fill="${tg?"#ffd166":fr?"#fff":"#1d1b26"}" stroke="#1d1b26" stroke-width="2" class="${tg?"tg":""}"/><text x="${x}" y="${y+(k==="gipfel"?20:-10)}" font-size="10" font-family="Arial" font-weight="bold" fill="#fff" text-anchor="middle" stroke="#1d1b26" stroke-width="3" paint-order="stroke">${n}</text>`; });
+    <polyline points="${pts.map(p=>p[0]+","+p[1]).join(" ")}" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="5 4"/>
+    <polyline id="rtrail" points="" fill="none" stroke="#e63946" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+  MAPORD.forEach(k=>{ const [x,y,n]=MAPPOS[k], tg=k===to; sv+=`<circle cx="${x}" cy="${y}" r="${tg?7:5}" fill="${tg?"#ffd166":"#1d1b26"}" stroke="#1d1b26" stroke-width="2" class="${tg?"tg":""}"/><text x="${x}" y="${y+(k==="gipfel"?22:17)}" font-size="10" font-family="Arial" font-weight="bold" fill="#fff" text-anchor="middle" stroke="#1d1b26" stroke-width="3" paint-order="stroke">${n}</text>`; });
+  MAPORD.forEach(k=>{ if(!S.badges.includes(AREA_BADGE[k])) return; const [x,y]=MAPPOS[k];
+    sv+=`<g class="flag${k===from?" drop":""}" id="fl-${k}" transform="translate(${x+3},${y})"><line x1="0" y1="0" x2="0" y2="-20" stroke="#1d1b26" stroke-width="2"/><path d="M1 -20 L14 -15.5 L1 -11 Z" fill="#e63946" stroke="#1d1b26" stroke-width="1"/><circle cx="0" cy="-20" r="1.6" fill="#ffd166"/></g>`; });
+  const [fx,fy]=MAPPOS[from]||MAPPOS[to]; sv+=`<circle id="rdot" cx="${fx}" cy="${fy}" r="4.5" fill="#e63946" stroke="#fff" stroke-width="2"/>`;
   return `<svg class="rcm" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg">${sv}</svg>`;
 }
+function routePts(from,to){ const a=MAPORD.indexOf(from), b=MAPORD.indexOf(to); if(a<0||b<0) return [MAPPOS[to]]; const st=a<b?1:-1, r=[]; for(let i=a;i!==b+st;i+=st) r.push(MAPPOS[MAPORD[i]]); return r; }
+function animDot(T,pts,ms){ return new Promise(res=>{ const dot=T.querySelector("#rdot"), tr=T.querySelector("#rtrail"); if(pts.length<2){ res(); return; }
+  const seg=[]; let tot=0; for(let i=1;i<pts.length;i++){ const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); seg.push(d); tot+=d; }
+  const t0=performance.now(); (function st(now){ const k=Math.min(1,(now-t0)/ms), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2; let L=e*tot, i=0, path=[pts[0]];
+    while(i<seg.length&&L>seg[i]){ L-=seg[i]; i++; path.push(pts[i]); } let x=pts[pts.length-1][0], y=pts[pts.length-1][1];
+    if(i<seg.length){ const q=L/seg[i]; x=pts[i][0]+(pts[i+1][0]-pts[i][0])*q; y=pts[i][1]+(pts[i+1][1]-pts[i][1])*q; }
+    path.push([x,y]); dot.setAttribute("cx",x); dot.setAttribute("cy",y); tr.setAttribute("points",path.map(p=>p.join(",")).join(" "));
+    if(k<1) requestAnimationFrame(st); else res(); })(t0); }); }
 async function regionCard(to){
   const T=$("#trans"), from=AREA.id;
-  T.innerHTML=`<div class="rc"><div class="rcw"></div><div class="rcd">Du reist nach …</div><div class="rcn">${esc(AREAS[to].name)}</div>${miniMap(to,from)}</div>`; T.classList.add("show");
+  T.innerHTML=`<div class="rc mp"><div class="rcw"></div><div class="rcd">Du reist nach …</div><div class="rcn">${esc(AREAS[to].name)}</div>${miniMap(to,from)}</div>`; T.classList.add("show");
   const rc=T.querySelector(".rc"), w=T.querySelector(".rcw");
-  T.animate([{opacity:0},{opacity:1}],{duration:200,fill:"forwards"});
-  await sleep(200);
-  for(const ch of "KALKULIA"){ const sp=document.createElement("span"); sp.textContent=ch; w.appendChild(sp); sfx("tick"); await sleep(75); }
-  await sleep(250); rc.classList.add("s2"); await sleep(450); rc.classList.add("s3"); await sleep(1300);
+  T.animate([{opacity:0},{opacity:1}],{duration:300,fill:"forwards"});
+  await sleep(500);
+  const fl=T.querySelector(".flag.drop"); if(fl){ fl.classList.add("go"); sfx("ok"); await sleep(1000); } else await sleep(300);
+  await animDot(T,routePts(from,to),Math.max(1400,routePts(from,to).length*700)); sfx("tick");
+  await sleep(600); rc.classList.remove("mp"); await sleep(600);
+  for(const ch of "KALKULIA"){ const sp=document.createElement("span"); sp.textContent=ch; w.appendChild(sp); sfx("tick"); await sleep(85); }
+  await sleep(300); rc.classList.add("s2"); await sleep(550); rc.classList.add("s3"); await sleep(1800);
 }
 async function regionCardOut(){ const T=$("#trans"); await T.animate([{opacity:1},{opacity:0}],{duration:300,fill:"forwards"}).finished; T.classList.remove("show"); T.innerHTML=""; }
 const SELLER=look({hair:"zopf",hairC:"#a0522d",skin:"#ffe0c2",topC:"#3a6ea5",pants:"#1d1b26"});

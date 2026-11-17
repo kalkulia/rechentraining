@@ -98,11 +98,11 @@ function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("sho
 function ago(ms){ if(!ms) return "noch nie"; const m=Math.round((Date.now()-ms)/60000); if(m<1) return "gerade eben"; if(m<60) return `vor ${m} Min.`; const h=Math.round(m/60); if(h<24) return `vor ${h} Std.`; return new Date(ms).toLocaleDateString("de-CH"); }
 
 function loginView(msg=""){
-  $("#root").innerHTML=`<div class="box login"><h1>Kalkulia</h1><p class="muted">Lehrerseite – Anmeldung wie auf der Übungsseite.</p>
+  $("#root").innerHTML=`<div class="box login"><h1>Kalkulia</h1><p class="muted">Lehrerseite – Anmeldung gleich wie bei der Übungsseite zur Ähnlichkeit (LU 8).</p>
    ${API?"":`<p class="msg" style="color:var(--bad)">In config.js ist noch keine Google-Adresse eingetragen.</p>`}
    <label for="c">Zugang</label><input id="c" type="text" autocomplete="username" placeholder="z. B. rap-emm">
    <label for="p">Passwort</label><div style="display:flex;gap:8px"><input id="p" type="password" autocomplete="current-password" inputmode="numeric" placeholder="TTMMJJ"><button class="btn" id="eye" type="button" title="Passwort anzeigen" aria-label="Passwort anzeigen" style="line-height:0"><svg viewBox="0 0 24 24" width="1.2em" height="1.2em" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg></button></div>
-   <p><button class="btn gold" id="go">Anmelden</button></p><p class="msg" id="m">${esc(msg)}</p></div>`;
+   <p style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn gold" id="go">Anmelden</button><a class="btn" href="index.html" style="text-decoration:none">Abbrechen – zurück zu Kalkulia</a></p><p class="msg" id="m">${esc(msg)}</p></div>`;
   $("#c").focus();
   $("#c").onkeydown=e=>{ if(e.key==="Enter") $("#p").focus(); };
   $("#p").onkeydown=e=>{ if(e.key==="Enter") login(); };
@@ -157,7 +157,7 @@ function printCerts(){
 }
 const pm=st=>st.pass===true?"errors":st.pass===false?"off":(st.pass||"always");
 function main(){
-  $("#root").innerHTML=`<div class="box"><div class="top"><h1>Kalkulia – Klasse</h1><span class="sp"></span><span class="muted" id="who"></span><button class="btn" id="rf">Aktualisieren</button><button class="btn" id="lo">Abmelden</button></div></div>
+  $("#root").innerHTML=`<div class="box"><div class="top"><h1>Kalkulia – Klasse</h1><span class="sp"></span><span class="muted" id="who"></span><a class="btn" href="index.html" style="text-decoration:none">Zum Spiel</a><button class="btn" id="rf">Aktualisieren</button><button class="btn" id="lo">Abmelden</button></div></div>
    <div class="box"><h2>Für die ganze Klasse</h2><div class="settings" id="cls"></div><p class="legend">Gilt für alle Lernenden. Einzelne Personen kannst du unten in der Liste anpassen.</p></div>
    <div class="box"><h2>Lernende</h2><table><thead><tr><th>Name</th><th>Zahling</th><th style="text-align:right">Münzen</th><th style="text-align:right">Orden</th><th style="text-align:right">Richtig / Falsch</th><th>Fehler</th><th>Arena</th><th>Zuletzt</th><th>Aktionen</th></tr></thead><tbody id="tb"></tbody></table>
    <p class="legend">Klick auf eine Zeile zeigt die offenen Fehler mit den richtigen Lösungen. Ablauf: Die Person druckt ihr Fehlerblatt, verbessert es auf Papier und zeigt es dir. Dann drückst du <b>«✓ Blatt gesehen»</b> – das ist alles: Die gedruckten Fehler (plus gleiche Aufgabentypen) gelten als erledigt, es gibt 5 Münzen pro Aufgabe, und falls die nächste Arena noch zu ist, geht sie gleich mit auf.</p></div>`;
