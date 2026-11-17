@@ -82,22 +82,25 @@ body{display:flex;align-items:center;justify-content:center;overflow:hidden}
 .plat.ep{right:5%;top:40%;width:45%;height:13%}
 .plat.pp{left:2%;bottom:3%;width:55%;height:14%}
 .spr{position:absolute;image-rendering:pixelated;visibility:hidden}
+.spr.outL{animation:outL .38s ease-in forwards}@keyframes outL{to{transform:translateX(-140%);opacity:0}}
 #eSpr{right:13%;top:6%;width:8.5em}
 #tSpr{right:12%;top:0;width:10em}
 #pSpr{left:7%;bottom:6%;width:10.5em}
 .scene.task #eSpr{right:6%;width:7.5em}
 .scene.task #pSpr{width:9em;left:3%}
-.hpbox{position:absolute;padding:.15em .5em .3em .6em;border-left:.3em solid var(--ink);border-bottom:.3em solid var(--ink);border-bottom-left-radius:.5em;font-weight:700;visibility:hidden;background:var(--gb)}
+.hpbox{position:absolute;font-size:1.25em;min-width:13em;padding:.25em .7em .4em .7em;border-left:.3em solid var(--ink);border-bottom:.3em solid var(--ink);border-bottom-left-radius:.5em;font-weight:700;visibility:hidden;background:var(--gb)}
 .hpbox .nm{font-size:1.15em;letter-spacing:.02em}
 .hpbox .nm small{font-size:.85em;margin-left:.5em;font-weight:600;background:#fff;border:.12em solid var(--ink);border-radius:.3em;padding:0 .3em}
 .hpbox .hl{display:flex;align-items:center;gap:.3em;font-size:.8em}
 .hpbox .hl b{background:#f2a541;color:var(--ink);padding:0 .2em;border-radius:.15em;font-size:.85em}
-.hpbox .bar{width:7em}
+.hpbox .bar{width:9.5em;height:.75em}
+.hpbox .hl{font-size:.9em}
+.hpbox .hpn{font-size:1em}
 .hpbox .hpn{text-align:right;font-size:.85em}
 #eBox{left:4%;top:5%}
-#pBox{right:4%;top:47%}
-.scene.task #pBox{right:2%;top:44%;font-size:.85em}
-.scene.task #eBox{font-size:.85em}
+#pBox{right:4%;bottom:6%;top:auto;border-left:none;border-right:.3em solid var(--ink);border-bottom-left-radius:0;border-bottom-right-radius:.5em}
+.scene.task #pBox{right:2%;bottom:4%;top:auto;font-size:1em}
+.scene.task #eBox{font-size:1em}
 #fx{position:absolute;inset:0;pointer-events:none;z-index:3}
 .p{position:absolute;width:.7em;height:.7em;margin:-.35em 0 0 -.35em}
 .dmg{position:absolute;font-weight:700;font-size:1.4em;color:var(--bad);text-shadow:.1em .1em 0 #fff;z-index:4}
@@ -212,12 +215,19 @@ table.gt td.na{background:#f0f0f0}
 .rcn{margin-top:.2em;color:#fff;font-size:2.3em;font-weight:700;opacity:0;transform:scale(.8);transition:opacity .3s,transform .3s cubic-bezier(.2,1.6,.4,1);text-shadow:0 .08em 0 #000}
 .rcm{margin-top:.8em;width:20em;opacity:0;transition:opacity .3s,width .6s ease}
 .rc.mp .rcw,.rc.mp .rcd,.rc.mp .rcn{display:none}.rc.mp .rcm{width:min(40em,90%);opacity:1;margin-top:0}
-.rcm .flag.drop{opacity:0}.rcm .flag.drop.go{animation:flagdrop .7s cubic-bezier(.3,1.6,.5,1) forwards}
+.rcm .flag.drop,.rcm .chk.drop{opacity:0}.rcm .chk.drop.go{animation:chkpop .5s cubic-bezier(.3,1.8,.5,1) forwards}@keyframes chkpop{0%{opacity:0;scale:.2}100%{opacity:1;scale:1}}.rcm .flag.drop.go{animation:flagdrop .7s cubic-bezier(.3,1.6,.5,1) forwards}
 @keyframes flagdrop{0%{opacity:0;translate:0 -30px}60%{opacity:1}100%{opacity:1;translate:0 0}}
 .rc.s2 .rcd,.rc.s3 .rcn,.rc .rcm{opacity:1}.rc.s3 .rcn{transform:none}
 .rcm .tg{animation:rcpulse .7s ease-in-out infinite alternate}
 @keyframes rcpulse{to{r:9}}
 #trip{z-index:8;background:#000}
+#gameover{position:absolute;inset:0;z-index:12;background:#0b0b12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6em;color:#fff;text-align:center;padding:1em;animation:goin .6s ease}
+@keyframes goin{from{opacity:0}}
+#gameover .go1{font-size:4.2em;font-weight:700;color:#ff5a5a;letter-spacing:.1em;text-shadow:0 .08em 0 #7a1010;animation:gopop .8s cubic-bezier(.2,1.5,.4,1)}
+@keyframes gopop{from{transform:scale(.3);opacity:0}}
+#gameover .go2{font-size:1.4em}#gameover .go3{font-size:1.2em;color:#ffd166}#gameover .go4{font-size:1.15em;color:#7bf1a8;margin-top:.6em}
+#gameover .go5{font-size:1.25em;font-weight:700;background:#fff;color:#1d1b26;border-radius:.4em;padding:.3em .8em;margin-top:.4em}
+#gameover .go6{margin-top:1em;opacity:.7;animation:lblink 1.6s ease-in-out infinite}
 .hs{display:flex;gap:1em;align-items:flex-start}.hsf{width:11em;flex:none}.hsf svg{width:100%}.hl{font-size:1.25em;font-weight:600;background:#fff;border:.12em solid var(--ink);border-radius:.3em;padding:.15em .5em;margin:.25em 0;display:inline-block;margin-right:.4em}
 .hgrid{flex-direction:row;flex-wrap:wrap}.hgrid .btn{flex:1 1 30%}
 #print .hs{display:flex;gap:20px}#print .hsf{width:200px}#print .hl{font-size:16pt;border:1px solid #000;padding:4px 8px;margin:4px 6px 4px 0;display:inline-block}#trip{z-index:8;background:#000}
@@ -1071,6 +1081,14 @@ function drawTile(c,ch,x,y,sx,sy,t){
   }
 }
 const doorMid=b=>{ const xs=b.doors.map(d=>d[0]); return (Math.min(...xs)+Math.max(...xs)+1)/2*TS; };
+const FLAGT={};
+function arenaFlag(c,b,cx,cy){
+  if(!AREA.arena||b.id!=="arena"||!S.badges.includes(AREA.arena.id)||ROOM) return; const id=AREA.arena.id, now=performance.now(); S.flags.cp=S.flags.cp||{};
+  let k=1; if(!S.flags.cp[id]){ const vy=b.y*TS-cy; if(!FLAGT[id]){ if(mode!=="world"||vy<-10||vy>VH*TS-60) return; FLAGT[id]=now; } k=Math.min(1,(now-FLAGT[id])/1600); if(k>=1&&mode==="world"){ S.flags.cp[id]=1; save(); say("Checkpoint",[`Auf der ${b.name} weht jetzt deine Fahne!`,"Checkpoint gesetzt: Dein Fortschritt in diesem Gebiet ist gesichert."]); } }
+  const X=b.x*TS-cx+b.w*8+24, Y=b.y*TS-cy+50, h=Math.round(22*k), wave=Math.round(Math.sin(now/200));
+  px(c,"#1d1b26",X,Y-h,2,h); px(c,"#ffd166",X-1,Y-h-2,4,2);
+  if(k>.3){ const fy=Y-h+1; px(c,"#1d1b26",X+2,fy-1,14,10); px(c,"#38b764",X+2,fy,13,8+wave*0); px(c,"#2a8f4c",X+2,fy+6,13,2); px(c,"#fff",X+6,fy+4,1,1); px(c,"#fff",X+7,fy+5,1,1); px(c,"#fff",X+8,fy+4,1,1); px(c,"#fff",X+9,fy+3,1,1); px(c,"#fff",X+10,fy+2,1,1); }
+}
 function drawBuilding(c,b,cx,cy){
   const X=b.x*TS-cx, Y=b.y*TS-cy, W=b.w*TS, H=b.h*TS, rH=Math.floor(H*.48), mid=doorMid(b)-cx;
   px(c,"rgba(0,0,0,.2)",X+2,Y+H-1,W,3); px(c,b.wall,X,Y+rH,W,H-rH); px(c,DK,X,Y+rH,W,1);
@@ -1176,7 +1194,7 @@ function render(t){
     for(let y=y0;y<=y0+VH;y++) for(let x=x0;x<=x0+VW;x++){ if(y>=MH||x>=MW) continue; const ch=map[y][x], a=SA[ch]; if(!a) continue; const sx=x*TS-cx, sy=y*TS-cy; ctx.globalAlpha=a*xk;
       if(ch==="T"||ch==="Y"||ch==="W") { px(ctx,"#f4f8ff",sx+2,sy,12,4); px(ctx,"#f4f8ff",sx+1,sy+6,14,3); } else if(ch==='"') { px(ctx,"#f4f8ff",sx,sy,16,9); } else if(ch==="L"||ch==="s") { px(ctx,"#f4f8ff",sx,sy+12,16,4); } else px(ctx,"#f4f8ff",sx,sy,16,16);
       ctx.globalAlpha=1; } }
-  BUILD.forEach(b=>drawBuilding(ctx,b,cx,cy));
+  BUILD.forEach(b=>{ drawBuilding(ctx,b,cx,cy); arenaFlag(ctx,b,cx,cy); });
   if(xk>0){ ctx.globalAlpha=xk; BUILD.forEach(b=>{ const X=b.x*TS-cx, Y=b.y*TS-cy; px(ctx,"#f4f8ff",X-2,Y-2,b.w*TS+4,5); px(ctx,"#f4f8ff",X+3,Y+3,b.w*TS-6,2); }); ctx.globalAlpha=1; }
   if(ROOM) OBJS.forEach(o=>o.draw&&o.draw(ctx,o.x*TS-cx,o.y*TS-cy));
   if(AREA.boat&&!ROOM){ const bx=AREA.boat.x*TS-cx, by=AREA.boat.y*TS-cy+Math.round(Math.sin(t/500)); px(ctx,"#6b4f3a",bx+1,by+8,30,6); px(ctx,"#8b6440",bx+3,by+6,26,3); px(ctx,"#f8f8f0",bx+2,by+10,28,1); px(ctx,DK,bx+14,by-14,2,20); px(ctx,"#f8f8f0",bx+16,by-12,10,12); px(ctx,"#d64045",bx+16,by-12,10,2); px(ctx,"#8fd0f5",bx+5,by+14,24,1); }
@@ -1375,7 +1393,7 @@ async function leaveBuilding(){
 function roomPal(){ const k=ROOM.kind; if(k==="arena") return {wall:ROOM.b.wall,trim:ROOM.b.roof,f1:"#ddd6c6",f2:"#d2cab8"};
   return {home:{wall:"#f2e3c6",trim:"#c0504d",f1:"#c49a6c",f2:"#b88b5c"},stube:{wall:"#f3e6cf",trim:"#2e6b8a",f1:"#d9b07c",f2:"#cfa571",pat:"rgba(160,120,70,.18)"},shop:{wall:"#e8eef7",trim:"#3a6ea5",f1:"#e9eef2",f2:"#d6dee6"}}[k]; }
 function buildRoom(kind){
-  const big=kind==="stube", W=big?20:15, H=big?14:11, wh=big?4:2; ROOM.wh=wh; ROOM.spawn=[7,9,"up"]; ROOM.heal=null; ROOM.cats=null;
+  const big=kind==="stube", W=big?20:15, H=big?16:11, wh=big?4:2; ROOM.wh=wh; ROOM.spawn=[7,9,"up"]; ROOM.heal=null; ROOM.cats=null;
   MW=W; MH=H; map=[]; for(let y=0;y<H;y++) map.push(Array(W).fill(","));
   for(let x=0;x<W;x++){ for(let y=0;y<wh;y++) map[y][x]="|"; map[H-1][x]="|"; } for(let y=0;y<H;y++){ map[y][0]="|"; map[y][W-1]="|"; }
   if(!big) map[H-1][7]="M"; BUILD=[]; doorAt={}; NPCS=[]; OBJS=[];
@@ -1417,7 +1435,7 @@ function drawHints(c,cx,cy,t){
   OBJS.forEach(o=>{ if(o.hint&&hintOn(o.hint)){ const lift=ROOM.kind==="stube"&&o.y<4?16:-12; mark(o.x*TS-cx+o.w*8-3,o.y*TS-cy+lift); } });
 }
 const ROOMTIPS={home:["Dein Zimmer! Beim Bett ruhst du dich aus und heilst dein Team: hinlaufen und Enter drücken.","Beim Kleiderschrank ziehst du dich um. Das gelbe Ausrufezeichen zeigt dir, wo es etwas zu tun gibt."],
-  stube:["Willkommen in der Rechenstube! Gelbe Ausrufezeichen zeigen dir, wo du etwas tun kannst: hinlaufen und Enter drücken.","Am Computer oder Drucker druckst du dein Fehlerblatt. Herr Emmenegger zeigt dir deinen Lernfortschritt, Frau Müller hat Formelblätter zu jedem Thema.","Auf dem Sofa ruhst du dich aus – das heilt dein Team."],
+  stube:["Willkommen in der Rechenstube! Gelbe Ausrufezeichen zeigen dir, wo du etwas tun kannst: hinlaufen und Enter drücken.","Am Drucker vorne auf dem Lehrerpult (neben dem Adventskranz) druckst du dein Fehlerblatt. Herr Emmenegger zeigt dir deinen Lernfortschritt, Frau Müller am Stehpult hat Formelblätter zu jedem Thema."],
   shop:["Sprich die Verkäuferin an der Theke an (hinlaufen und Enter drücken), um einzukaufen."],
   arena:["Sprich die Arenaleitung an (hinlaufen und Enter drücken), um sie herauszufordern."]};
 function roomTip(kind){ const k="tip_"+kind; if((S.flags.seen||{})[k]) return; seenHint(k); setTimeout(()=>{ if(mode==="world"&&ROOM) say("Tipp",ROOMTIPS[kind]); },350); }
@@ -1462,7 +1480,7 @@ const SCREEN=[
 function txt(c,s,x,y,size,col){ c.fillStyle=col; c.font=`bold ${size}px Fredoka, Arial, sans-serif`; c.textAlign="center"; c.textBaseline="alphabetic"; c.fillText(s,x,y); }
 function screenMsg(){ return ["Auf dem Bildschirm läuft: «Let's play Kalkulia!»","Auf dem Bildschirm steht: «Fehler sind Lernchancen!»","Auf dem Bildschirm steht: «Mathe Niveau C – du schaffst das!»","Auf dem Bildschirm zeigt sich ein Zahling – und winkt dir zu."][Math.floor(performance.now()/3600)%4]; }
 function buildStube(obj){
-  ROOM.spawn=[16,4,"down"]; ROOM.heal=[16,12,"up"]; map[3][16]="M";
+  ROOM.spawn=[16,4,"down"]; ROOM.heal=[16,4,"down"]; map[3][16]="M";
   const tt=()=>performance.now();
   // ----- Wand (Zeilen 0–3) -----
   obj(1,0,18,1,(c,X,Y)=>{ const b=Math.floor(tt()/500); if(ADVENT()) for(let x=6;x<288;x+=10){ const yy=Y+20+Math.round(Math.sin(x*.2)*1.5); px(c,"#3a3a3a",X+x,yy-1,10,1); px(c,["#ff5a5a","#ffd166","#4cc9f0","#7bf1a8"][((x/10|0)+b)%4],X+x+4,yy,2,3); } },null);
@@ -1497,39 +1515,39 @@ function buildStube(obj){
       if(ADVENT()){ garland(c,X-5,X+21,Y+28,3,t,14); } },null,false);
   obj(17,1,2,3,(c,X,Y)=>{ px(c,"#8b6440",X+2,Y+20,28,24); for(let r=0;r<2;r++){ px(c,"#5a3518",X+3,Y+30+r*10,26,2); for(let i=0;i<7;i++) px(c,["#d64045","#3a6ea5","#2e9e5b","#ffd166","#8e6cc9","#ff8fab","#f2a541"][(i+r*2)%7],X+4+i*3.6,Y+22+r*10,3,8); } [["kantling",4],["troepfli",13],["flammli",21]].forEach(([sp,dx])=>{ const im=sprImg(sp); if(im.complete) c.drawImage(im,X+dx,Y+11,9,9); }); },
       ()=>say("Bücherregal",["Mathematik-Bücher, Lernhefte – und oben drauf stehen ein paar Zahling-Figuren als Deko."]));
-  // ----- Boden (Zeilen 4–12) -----
+  // ----- Boden (Zeilen 4–14) -----
   obj(1,4,1,3,(c,X,Y)=>{ px(c,"#8b6440",X+1,Y-6,15,52); for(let r=0;r<4;r++){ px(c,"#5a3518",X+2,Y+5+r*11,13,2); for(let i=0;i<3;i++) px(c,["#d64045","#3a6ea5","#2e9e5b","#ffd166","#8e6cc9"][(i+r)%5],X+3+i*4,Y-3+r*11,3,8); } px(c,"#c9a227",X+4,Y+38,8,4); },()=>say("Regal",["Schulmaterial: Geodreiecke, Zirkel, Taschenrechner, Massbänder. Alles ordentlich beschriftet."]));
-  // Computerarbeitsplatz + Drucker (links)
-  obj(3,5,2,1,(c,X,Y)=>{ px(c,"#c49a6c",X,Y+3,32,10); px(c,"#8b6440",X,Y+12,32,2); px(c,"#5a3518",X+2,Y+13,2,3); px(c,"#5a3518",X+28,Y+13,2,3);
-      px(c,"#2b2b3a",X+8,Y-8,18,12); px(c,"#264d7a",X+9,Y-7,16,9); px(c,"#fff",X+11,Y-5,8,1); px(c,"#fff",X+11,Y-3,11,1); px(c,"#d64045",X+11,Y-1,5,1); px(c,"#3a3a3a",X+15,Y+4,4,1); px(c,"#c0c6ce",X+9,Y+6,16,3); px(c,"#3a6ea5",X+12,Y+15,8,4); },()=>book(),true,"pc");
-  obj(5,5,1,1,(c,X,Y)=>{ const t=tt(); px(c,"#8b6440",X,Y+6,16,8); px(c,"#5a3518",X+1,Y+13,2,3); px(c,"#5a3518",X+13,Y+13,2,3); px(c,"#c0c6ce",X+1,Y-3,14,9); px(c,"#9aa1ab",X+1,Y+4,14,2); px(c,"#1d1b26",X+3,Y,10,1); px(c,"#fff",X+3,Y-6,10,4); px(c,Math.floor(t/500)%2?"#38b764":"#1f6b33",X+12,Y+1,2,1);
-      if(Math.floor(t/4000)%3===0){ const k=(t%4000)/4000; px(c,"#fff",X+3,Y+1+Math.round(k*6),10,3); } },()=>book(),true,"printer");
-  // Lehrerpult unter dem Bildschirm
-  obj(7,6,5,1,(c,X,Y)=>{ const t=tt(); px(c,"#6b4423",X,Y+1,80,13); px(c,"#8b5a2b",X,Y,80,4); px(c,"#5a3518",X+2,Y+13,4,3); px(c,"#5a3518",X+74,Y+13,4,3);
-      px(c,"#2b2b3a",X+30,Y-9,22,10); px(c,"#1d1b26",X+31,Y-8,20,8); px(c,"#3a3a3a",X+39,Y+1,4,2); px(c,"#c0c6ce",X+32,Y+3,18,3); if(EMM_STATE==="type"&&Math.floor(t/150)%2) px(c,"#fff",X+34+Math.floor(t/150)%14,Y+3,2,1);
-      px(c,"#fff",X+6,Y-1,10,6); px(c,"#fff",X+8,Y-3,10,6); if(EMM_STATE==="paper"&&Math.floor(t/300)%2) px(c,"#f6e3bd",X+12,Y-6,7,5);
-      px(c,"#fff",X+62,Y-2,6,6); px(c,"#d64045",X+63,Y-1,4,4); px(c,"#fff",X+68,Y,2,2); const im=sprImg("blattli"); if(im.complete) c.drawImage(im,X+56,Y-9,8,8); },()=>{ seenHint("emm"); emmPanel(); });
+  const desk=(X,Y,w)=>{ px(c0,"#6b4423",X,Y+1,w,13); px(c0,"#8b5a2b",X,Y,w,4); px(c0,"#5a3518",X+2,Y+13,3,3); px(c0,"#5a3518",X+w-5,Y+13,3,3); px(c0,"rgba(0,0,0,.15)",X+w-1,Y+1,1,13); };
+  let c0=null;
+  // Lehrerpult links, schräger Bildschirm an der linken Ecke
+  obj(3,6,4,1,(c,X,Y)=>{ c0=c; const t=tt(); desk(X,Y,64);
+      c.fillStyle="#2b2b3a"; c.beginPath(); c.moveTo(X+2,Y-8); c.lineTo(X+18,Y-11); c.lineTo(X+19,Y-1); c.lineTo(X+3,Y+1); c.fill(); c.fillStyle="#1d1b26"; c.beginPath(); c.moveTo(X+4,Y-7); c.lineTo(X+17,Y-9.5); c.lineTo(X+17.5,Y-2); c.lineTo(X+4.5,Y); c.fill();
+      px(c,"#3a3a3a",X+10,Y+1,3,2); px(c,"#c0c6ce",X+20,Y+3,16,3); if(EMM_STATE==="type"&&Math.floor(t/150)%2) px(c,"#fff",X+22+Math.floor(t/150)%12,Y+3,2,1); px(c,"#9aa1ab",X+38,Y+3,3,4);
+      px(c,"#fff",X+44,Y-1,10,6); px(c,"#fff",X+46,Y-3,10,6); if(EMM_STATE==="paper"&&Math.floor(t/300)%2) px(c,"#f6e3bd",X+50,Y-6,7,5);
+      px(c,"#fff",X+57,Y-2,6,6); px(c,"#d64045",X+58,Y-1,4,4); px(c,"#fff",X+63,Y,2,2); const im=sprImg("blattli"); if(im.complete) c.drawImage(im,X+30,Y-9,8,8); },()=>{ seenHint("emm"); emmPanel(); });
+  // angehängtes langes Pult
+  obj(7,6,6,1,(c,X,Y)=>{ c0=c; desk(X,Y,96); px(c,"#fff",X+10,Y-1,12,5); px(c,"#cde9ff",X+12,Y-3,10,5); px(c,"#3a6ea5",X+40,Y,14,4); px(c,"#d64045",X+42,Y-2,10,3); px(c,"#ffd166",X+70,Y-1,9,4); px(c,"#2e9e5b",X+86,Y-4,4,5); },()=>say("Lehrerpult",["Stapel mit Arbeitsblättern, Lehrmittel und ein paar korrigierte Prüfungen. Lieber nicht hineinschauen!"]));
+  // Adventskranz und Drucker am Ende des Pults, nahe der Tür
+  obj(13,6,1,1,(c,X,Y)=>{ c0=c; const t=tt(); desk(X,Y,16);
+      if(ADVENT()){ px(c,"#1f5a33",X+1,Y-1,14,5); px(c,"#2e8b46",X+2,Y-2,12,2); [2,6,10,13].forEach((dx,i)=>{ px(c,"#d64045",X+dx,Y-7,2,5); const f=Math.sin(t/90+i*2); px(c,"#ffd166",X+dx,Y-9-(f>0?1:0),2,2); px(c,"#fff3c4",X+dx,Y-8,1,1); }); px(c,"#ffd166",X+5,Y,1,1); px(c,"#d64045",X+9,Y,1,1); }
+      else { px(c,"#2e9e5b",X+5,Y-4,6,6); } },()=>say(ADVENT()?"Adventskranz":"Pflanze",ADVENT()?["Die Kerzen am Adventskranz flackern gemütlich. Es riecht nach Tannenzweigen."]:["Eine kleine Pflanze auf dem Pult."]));
+  obj(14,6,1,1,(c,X,Y)=>{ c0=c; const t=tt(); desk(X,Y,16); px(c,"#c0c6ce",X+1,Y-7,14,9); px(c,"#9aa1ab",X+1,Y,14,2); px(c,"#1d1b26",X+3,Y-4,10,1); px(c,"#fff",X+3,Y-10,10,4); px(c,Math.floor(t/500)%2?"#38b764":"#1f6b33",X+12,Y-3,2,1);
+      if(Math.floor(t/4000)%3===0){ const k=(t%4000)/4000; px(c,"#fff",X+3,Y-3+Math.round(k*6),10,3); } },()=>book(),true,"printer");
   // Lernmaterial-Regal
   obj(13,4,2,1,(c,X,Y)=>{ px(c,"#c49a6c",X,Y-4,32,18); for(let i=0;i<4;i++){ px(c,["#ffd166","#4cc9f0","#ff8fab","#7bf1a8"][i],X+2+i*7.5,Y-2,6,6); px(c,["#f2a541","#3a6ea5","#d64045","#2e9e5b"][i],X+2+i*7.5,Y+6,6,6); } },()=>say("Fördermaterial",["Kisten mit Lernkarten, Würfeln, Bruchstreifen und Massstäben. Frau Müller hat alles beschriftet."]));
-  // Arbeitsplatz Frau Müller
-  obj(13,7,3,1,(c,X,Y)=>{ px(c,"#b88b5c",X,Y+2,48,12); px(c,"#d4a373",X,Y,48,4); px(c,"#5a3518",X+2,Y+13,3,3); px(c,"#5a3518",X+43,Y+13,3,3);
-      px(c,"#c0c6ce",X+17,Y-5,16,8); px(c,"#3a3a3a",X+18,Y-4,14,6); px(c,"#9fd3ff",X+19,Y-3,12,4); px(c,"#9aa1ab",X+15,Y+3,20,2);
-      [["#ff8fab",2],["#4cc9f0",5],["#ffd166",8]].forEach(([col,dy])=>px(c,col,X+3,Y-dy+3,10,3)); px(c,"#fff",X+38,Y-2,8,6); px(c,"#999",X+39,Y,6,1); px(c,"#2e9e5b",X+41,Y-6,3,4); },()=>{ seenHint("mue"); muellerPanel(); });
-  // Adventskranz-Tisch
-  obj(16,9,1,1,(c,X,Y)=>{ const t=tt(); px(c,"#8b6440",X+1,Y+5,14,8); px(c,"#5a3518",X+7,Y+12,2,4);
-      if(ADVENT()){ px(c,"#1f5a33",X+1,Y+2,14,5); px(c,"#2e8b46",X+2,Y+1,12,2); [2,6,10,13].forEach((dx,i)=>{ px(c,"#d64045",X+dx,Y-4,2,5); const f=Math.sin(t/90+i*2); px(c,"#ffd166",X+dx,Y-6-(f>0?1:0),2,2); px(c,"#fff3c4",X+dx,Y-5,1,1); }); px(c,"#ffd166",X+5,Y+3,1,1); px(c,"#d64045",X+9,Y+3,1,1); }
-      else { px(c,"#2e9e5b",X+5,Y-2,6,6); } },()=>say(ADVENT()?"Adventskranz":"Tischchen",ADVENT()?["Die Kerzen am Adventskranz flackern gemütlich. Es riecht nach Tannenzweigen."]:["Ein kleines Tischchen mit einer Pflanze."]));
-  // Schülerpulte
-  [[4,9],[6,9],[9,9],[11,9],[4,11],[6,11],[9,11],[11,11]].forEach(([x,y],i)=>obj(x,y,1,1,(c,X,Y)=>{ px(c,"#c49a6c",X+1,Y+2,14,8); px(c,"#8b6440",X+1,Y+9,14,2); px(c,"#5a3518",X+2,Y+11,2,4); px(c,"#5a3518",X+12,Y+11,2,4); px(c,"#fff",X+3+(i%3),Y+3,6,5); px(c,"#3a6ea5",X+6,Y+13,5,3); px(c,"#2b5a8a",X+6,Y+12,5,1); if(i%3===1) px(c,"#d64045",X+11,Y+3,1,4); },()=>say("Pult",[["Auf dem Pult liegt ein Fehlerblatt. Alles sauber verbessert – stark!","In den Deckel hat jemand «π ≈ 3,14» geritzt.","Unter dem Pult klebt ein Kaugummi. Igitt!","Ein Geodreieck und ein angeknabberter Bleistift."][i%4]])));
-  // Kuschelsofa (Heilen)
-  obj(15,11,3,1,(c,X,Y)=>{ px(c,"#5a6bb0",X+1,Y-6,46,10); px(c,"#6f80c8",X+1,Y+2,46,10); px(c,"#4a5a9a",X,Y-4,4,16); px(c,"#4a5a9a",X+44,Y-4,4,16); px(c,"#ffd166",X+8,Y-3,8,7); px(c,"#ff8fab",X+30,Y-3,8,7); px(c,"#d64045",X+18,Y+3,14,7); px(c,"#fff",X+18,Y+5,14,1); },()=>healStation(),true,"sofa");
-  [[1,12],[18,12],[1,8]].forEach(([x,y])=>obj(x,y,1,1,(c,X,Y)=>{ px(c,"#b5562f",X+4,Y+9,8,6); px(c,"#2e9e5b",X+2,Y+1,12,9); px(c,"#3fae6a",X+5,Y-3,6,6); px(c,"#3fae6a",X+1,Y+4,4,3); },()=>say("Pflanze",["Eine Zimmerpflanze. Jemand giesst sie offenbar regelmässig – sie sieht super aus!"])));
-  // Katzenbaum
-  obj(18,5,1,3,(c,X,Y)=>{ px(c,"#d6c3a1",X+6,Y-10,4,56); for(let i=0;i<30;i+=3) px(c,"#c4ad86",X+6,Y-8+i*1.7,4,1); px(c,"#8b6440",X,Y+40,16,6); px(c,"#9a8670",X+1,Y+18,14,4); px(c,"#9a8670",X+1,Y-10,14,4); px(c,"#7a6650",X+1,Y-8,14,2); px(c,"#7a6650",X+1,Y+20,14,2); px(c,"#ff8fab",X+12,Y+22,2,5); },()=>say("Katzenbaum",["Der Katzenbaum von Jackie und Josy. Oben ist ihr Lieblingsplatz zum Schlafen."]));
+  // Stehpult von Frau Müller (am Rand)
+  obj(17,7,1,1,(c,X,Y)=>{ px(c,"#5a3518",X+7,Y+4,2,12); px(c,"#5a3518",X+4,Y+14,8,2); px(c,"#b88b5c",X+1,Y-3,14,8); px(c,"#d4a373",X+1,Y-4,14,2); px(c,"#c0c6ce",X+3,Y-8,10,5); px(c,"#9fd3ff",X+4,Y-7,8,3); px(c,"#ff8fab",X+2,Y,5,2); px(c,"#4cc9f0",X+9,Y,5,2); },()=>{ seenHint("mue"); muellerPanel(); });
+  // Schülerpulte wie im Sitzplan: links Zweier (hinten Dreier), rechts vorne Dreier, sonst Zweier
+  const sdesk=(x,y,i)=>obj(x,y,1,1,(c,X,Y)=>{ px(c,"#7a4b2a",X,Y+2,16,9); px(c,"#5e3a1f",X,Y+10,16,2); px(c,"rgba(0,0,0,.25)",X+15,Y+2,1,9); px(c,"#5a3518",X+1,Y+11,2,4); px(c,"#5a3518",X+13,Y+11,2,4); px(c,"#fff",X+4+(i%3),Y+3,6,5); px(c,"#e8c9a0",X+5,Y+13,6,3); px(c,"#2e9e8f",X+5,Y+15,6,1); if(i%3===1) px(c,"#d64045",X+12,Y+4,1,4); },
+    ()=>say("Pult",[["Auf dem Pult liegt ein Fehlerblatt. Alles sauber verbessert – stark!","In den Deckel hat jemand «π ≈ 3,14» geritzt.","Unter dem Pult klebt ein Kaugummi. Igitt!","Ein Geodreieck und ein angeknabberter Bleistift."][i%4]]));
+  [[3,8],[4,8],[3,10],[4,10],[3,12],[4,12],[3,14],[4,14],[5,14],[10,8],[11,8],[12,8],[11,10],[12,10],[11,12],[12,12],[11,14],[12,14]].forEach(([x,y],i)=>sdesk(x,y,i));
+  [[1,8],[18,9],[1,14]].forEach(([x,y])=>obj(x,y,1,1,(c,X,Y)=>{ px(c,"#b5562f",X+4,Y+9,8,6); px(c,"#2e9e5b",X+2,Y+1,12,9); px(c,"#3fae6a",X+5,Y-3,6,6); px(c,"#3fae6a",X+1,Y+4,4,3); },()=>say("Pflanze",["Eine Zimmerpflanze. Jemand giesst sie offenbar regelmässig – sie sieht super aus!"])));
+  // Katzenbaum hinten in der Ecke
+  obj(18,12,1,3,(c,X,Y)=>{ px(c,"#d6c3a1",X+6,Y-10,4,56); for(let i=0;i<30;i+=3) px(c,"#c4ad86",X+6,Y-8+i*1.7,4,1); px(c,"#8b6440",X,Y+40,16,6); px(c,"#9a8670",X+1,Y+18,14,4); px(c,"#9a8670",X+1,Y-10,14,4); px(c,"#7a6650",X+1,Y-8,14,2); px(c,"#7a6650",X+1,Y+20,14,2); px(c,"#ff8fab",X+12,Y+22,2,5); },()=>say("Katzenbaum",["Der Katzenbaum von Jackie und Josy. Oben ist ihr Lieblingsplatz zum Schlafen."]));
   // ----- Personen -----
-  NPCS.push({id:"emm",x:9,y:5,dir:"down",name:"Herr Emmenegger",look:EMMENEGGER,sx:1.12,act:()=>emmPanel(),lines:[],hint:"emm"});
-  NPCS.push({id:"mue",x:14,y:6,dir:"down",name:"Frau Müller",look:MUELLER,sx:.92,act:()=>muellerPanel(),lines:[],hint:"mue"});
-  ROOM.cats=[mkCat("Jackie","#5f636b","#3a3d42","#9aa1ab",[6,5.6]),mkCat("Josy","#c8954a","#8a5a24","#f2d29b",[18,4.4,-34])];
+  NPCS.push({id:"emm",x:4,y:5,dir:"down",name:"Herr Emmenegger",look:EMMENEGGER,sx:1.12,act:()=>emmPanel(),lines:[],hint:"emm"});
+  NPCS.push({id:"mue",x:18,y:7,dir:"left",name:"Frau Müller",look:MUELLER,sx:.92,act:()=>muellerPanel(),lines:[],hint:"mue"});
+  ROOM.cats=[mkCat("Jackie","#5f636b","#3a3d42","#9aa1ab",[15,6.4]),mkCat("Josy","#c8954a","#8a5a24","#f2d29b",[18,11.4,-34])];
   ROOM.tick=stubeTick;
 }
 let EMM_STATE="type", EMM_T=0, MUE_T=0;
@@ -1537,10 +1555,10 @@ function stubeTick(t){
   const E=NPCS.find(n=>n.id==="emm"), M=NPCS.find(n=>n.id==="mue");
   if(E&&mode!=="dialog"&&mode!=="panel"){ if(t>EMM_T){ EMM_STATE=pick(["type","type","screen","paper","nod"]); EMM_T=t+2500+Math.random()*2500; }
     E.dir=EMM_STATE==="screen"?"up":"down"; E.oy=EMM_STATE==="nod"?(Math.floor(t/250)%2):EMM_STATE==="type"?(Math.floor(t/180)%2?0:0):0; }
-  if(M&&mode!=="dialog"&&mode!=="panel"){ if(t>MUE_T){ const st=pick(["read","laptop","help","look"]); M.st=st; MUE_T=t+3000+Math.random()*3000; M.bubble=st==="help"?pick(["?","!","✓"]):null; M.dir=st==="help"?pick(["left","right"]):st==="look"?"left":"down"; } }
+  if(M&&mode!=="dialog"&&mode!=="panel"){ if(t>MUE_T){ const st=pick(["read","laptop","help","look"]); M.st=st; MUE_T=t+3000+Math.random()*3000; M.bubble=st==="help"?pick(["?","!","✓"]):null; M.dir=st==="help"?pick(["left","down"]):st==="look"?"down":"left"; } }
   updCats(t);
 }
-const CATSPOTS=[[6,5.6,0,"watch"],[7.5,7.6,0],[12.5,10.3,0],[3,10.4,0],[8,12,0],[17.3,8.3,0],[15.5,4.6,0],[2.5,7.8,0],[18,4.4,-34,"high"],[18,6.2,-16,"high"],[1,4,-22,"high"],[16,11,-6,"sofa"],[12.2,5.6,0,"behind"],[6.5,4.3,0,"behind"]];
+const CATSPOTS=[[15,6.4,0,"watch"],[8,9.4,0],[7.5,12.5,0],[15,11,0],[16,13.5,0],[9,7.5,0],[2,11,0],[18,11.4,-34,"high"],[18,13.2,-16,"high"],[1,4,-22,"high"],[10,5.2,0,"behind"],[15.5,8.6,0],[6.5,10.5,0],[2,6.8,0]];
 function mkCat(name,base,stripe,light,start){ return {name,base,stripe,light,x:start[0],y:start[1],z:start[2]||0,tx:start[0],ty:start[1],tz:start[2]||0,state:"sit",until:0,face:1,sx:0,sy:0,sz:0,mt:0,md:1}; }
 function updCats(t){
   ROOM.cats.forEach((k,i)=>{
@@ -1614,6 +1632,7 @@ function miniMap(to,from){
     <polyline id="rtrail" points="" fill="none" stroke="#e63946" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
   MAPORD.forEach(k=>{ const [x,y,n]=MAPPOS[k], tg=k===to; sv+=`<circle cx="${x}" cy="${y}" r="${tg?7:5}" fill="${tg?"#ffd166":"#1d1b26"}" stroke="#1d1b26" stroke-width="2" class="${tg?"tg":""}"/><text x="${x}" y="${y+(k==="gipfel"?22:17)}" font-size="10" font-family="Arial" font-weight="bold" fill="#fff" text-anchor="middle" stroke="#1d1b26" stroke-width="3" paint-order="stroke">${n}</text>`; });
   MAPORD.forEach(k=>{ if(!S.badges.includes(AREA_BADGE[k])) return; const [x,y]=MAPPOS[k];
+    sv+=`<g class="chk${k===from?" drop":""}" transform="translate(${x-12},${y+4})"><circle r="6" fill="#38b764" stroke="#1d1b26" stroke-width="1.5"/><path d="M-3 0 L-1 2.5 L3.2 -2.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>`;
     sv+=`<g class="flag${k===from?" drop":""}" id="fl-${k}" transform="translate(${x+3},${y})"><line x1="0" y1="0" x2="0" y2="-20" stroke="#1d1b26" stroke-width="2"/><path d="M1 -20 L14 -15.5 L1 -11 Z" fill="#e63946" stroke="#1d1b26" stroke-width="1"/><circle cx="0" cy="-20" r="1.6" fill="#ffd166"/></g>`; });
   const [fx,fy]=MAPPOS[from]||MAPPOS[to]; sv+=`<circle id="rdot" cx="${fx}" cy="${fy}" r="4.5" fill="#e63946" stroke="#fff" stroke-width="2"/>`;
   return `<svg class="rcm" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg">${sv}</svg>`;
@@ -1632,7 +1651,7 @@ async function regionCard(to){
   const rc=T.querySelector(".rc"), w=T.querySelector(".rcw");
   T.animate([{opacity:0},{opacity:1}],{duration:300,fill:"forwards"});
   await sleep(500);
-  const fl=T.querySelector(".flag.drop"); if(fl){ fl.classList.add("go"); sfx("ok"); await sleep(1000); } else await sleep(300);
+  const fl=T.querySelector(".flag.drop"); if(fl){ fl.classList.add("go"); sfx("ok"); await sleep(800); const ck=T.querySelector(".chk.drop"); if(ck){ ck.classList.add("go"); sfx("tick"); } await sleep(700); } else await sleep(300);
   await animDot(T,routePts(from,to),Math.max(1400,routePts(from,to).length*700)); sfx("tick");
   await sleep(600); rc.classList.remove("mp"); await sleep(600);
   for(const ch of "KALKULIA"){ const sp=document.createElement("span"); sp.textContent=ch; w.appendChild(sp); sfx("tick"); await sleep(85); }
@@ -1700,14 +1719,13 @@ function stube(msg=""){
 }
 function printSelection(){
   const open=openErrs().sort((a,b)=>(a.printed?1:0)-(b.printed?1:0)||a.t-b.t), seen=new Set(), sel=[];
-  for(const e of open){ if(sel.length>=8) break; if(!seen.has(e.v)){ seen.add(e.v); sel.push(e); } }
-  for(const e of open){ if(sel.length>=8) break; if(!sel.includes(e)) sel.push(e); }
+  for(const e of open){ if(sel.length>=6) break; if(!seen.has(e.v)){ seen.add(e.v); sel.push(e); } }
   return sel;
 }
 function book(msg=""){
   const open=openErrs(), sel=printSelection();
   openPanel(`<h2>Fehlerheft</h2><p>Hier landet jede Aufgabe, die du im Kampf falsch gelöst hast. So geht's:</p>
-   <p><b>1.</b> Fehlerblatt drucken (höchstens 8 Aufgaben, möglichst verschiedene). <b>2.</b> Auf Papier verbessern. <b>3.</b> Deiner Lehrperson zeigen und in der Rechenstube abstempeln lassen.</p>
+   <p><b>1.</b> Fehlerblatt drucken: Es kommen höchstens 6 verschiedene Beispiel-Aufgaben drauf, dazu eine Übersicht über alle Fehler. <b>2.</b> Auf Papier verbessern. <b>3.</b> Deiner Lehrperson zeigen und in der Rechenstube abstempeln lassen.</p>
    <div class="col"><button class="btn" data-act="print" ${sel.length?"":"disabled"}>Fehlerblatt drucken (${sel.length} Aufgaben)</button><button class="btn" data-act="back">Fertig</button></div><p class="msg">${msg}</p>
    <div class="list">${open.length?open.slice().reverse().map(e=>`<div class="item"><div class="grow">${errLine(e)}<br><small>Deine Antwort: ${esc(e.user)} · ${new Date(e.t).toLocaleDateString("de-CH")}</small></div>${e.printed?'<span class="tag pr">gedruckt</span>':'<span class="tag open">offen</span>'}</div>`).join(""):'<p class="muted">Keine offenen Fehler – stark!</p>'}</div>`,{name:"book",onBack:()=>stube(),onAct:a=>{
     if(a==="back") closePanel();
@@ -1715,11 +1733,13 @@ function book(msg=""){
   }});
 }
 function errLine(e){ if(isU(e)) return `<b>${CATS[e.fig].name}</b>: ${esc(e.vals.qPlain)}`; const F=FIGS[e.fig]; return `<b>${F.name}</b>: gegeben ${e.given.map(k=>`${lab(k)} = ${f(e.vals[k])} ${F.units[k]}`).join(", ")} → gesucht ${lab(e.ask)}`; }
+function errSummary(){ const by={}; openErrs().forEach(e=>{ const n=isU(e)?CATS[e.fig].name:FIGS[e.fig].name; by[n]=(by[n]||0)+1; }); const L=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+  return L.length?`<div class="intro"><b>Übersicht – deine offenen Fehler:</b> ${L.map(([n,c])=>`${n} (${c})`).join(" · ")}. Auf diesem Blatt stehen je ein Beispiel pro Aufgabentyp.</div>`:""; }
 function printErrors(items,withSol){
   const date=new Date().toLocaleDateString("de-CH");
   $("#print").innerHTML=`<h1>${withSol?"Lösungsblatt Fehlerheft":"Mein Fehlerheft"} – Kalkulia</h1>
    <div class="meta"><span>Spielname: <b>${esc(S.name)}</b></span><span>Name: ____________________</span><span>Datum: ${date}</span></div>
-   ${withSol?"":`<div class="intro">Löse jede Aufgabe nochmals sauber mit Lösungsweg. Kreuze danach an, was dein Fehler im Spiel war. Zeige das Blatt deiner Lehrperson, damit sie es im Spiel abstempeln kann.</div>`}
+   ${withSol?"":errSummary()}${withSol?"":`<div class="intro">Löse jede Aufgabe nochmals sauber mit Lösungsweg. Kreuze danach an, was dein Fehler im Spiel war. Zeige das Blatt deiner Lehrperson, damit sie es im Spiel abstempeln kann.</div>`}
    ${items.map((e,i)=>{ const st=VARS[e.v].steps(e.vals); return `<div class="pitem"><div class="top"><div class="pf">${figSVG(e.fig)}</div><div class="pt"><b>${i+1}. ${taskTitle(e)}${isU(e)?"":"."}</b>${taskTable(e,withSol)}<div class="mine">Meine Antwort im Spiel: <b>${esc(e.user)}</b> ${e.user.startsWith("(")?"":unitOf(e)}</div></div></div>
      ${withSol?`<div class="sol"><b>Lösungsweg:</b><br>${st.join("<br>")}</div>`:`<div class="wl">Mein Lösungsweg:</div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ft">Mein Fehler war: ☐ falsche Formel &nbsp; ☐ Einheit &nbsp; ☐ Komma / Stellenwert &nbsp; ☐ Rechenfehler &nbsp; ☐ Aufgabe falsch gelesen</div>`}</div>`; }).join("")}`;
   setTimeout(()=>{ try{ window.print(); }catch(e){} },120);
@@ -1875,7 +1895,7 @@ async function railTrip(to){
 let B=null; const BU={state:"idle"};
 const curE=()=>B.enemies[B.ei];
 const eName=e=>e.name||MONS[e.sp].name;
-function boxHTML(name,lvl,hp,max,showN){ return `<div class="nm">${name}<small>Lv. ${lvl}</small></div><div class="hl"><b>KP</b><span class="bar"><i class="${hpCls(hp,max)}" style="width:${100*hp/max}%"></i></span></div>${showN?`<div class="hpn">${hp} / ${max}</div>`:""}`; }
+function boxHTML(name,lvl,hp,max,showN){ return `<div class="nm">${name}<small>Lv. ${lvl}</small></div><div class="hl"><b title="Kraftpunkte">KP</b><span class="bar"><i class="${hpCls(hp,max)}" style="width:${100*hp/max}%"></i></span></div>${showN?`<div class="hpn">${hp} / ${max}</div>`:""}`; }
 function updBoxes(){ const e=curE(), m=S.mon; $("#eBox").innerHTML=boxHTML(eName(e),e.lvl,e.hp,e.maxhp,false)+(B.enemies.length>1?`<div class="hpn">${B.ei+1}/${B.enemies.length}</div>`:""); $("#pBox").innerHTML=boxHTML(monName(),m.lvl,m.hp,m.maxhp,true); }
 function anim(el,cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 function showSpr(el,src,cls){ el.src=src; el.className="spr"; el.style.visibility="visible"; if(cls) anim(el,cls); }
@@ -1913,6 +1933,31 @@ function battleKey(e){
 }
 $("#tbox").addEventListener("click",e=>{ if(BU.state==="msg"&&!e.target.closest("#bMenu")) BU.next&&BU.next(); });
 
+function backURL(L){
+  const k=JSON.stringify(L); backURL.c=backURL.c||{}; if(backURL.c[k]) return backURL.c[k];
+  const W=40,H=48, cv=document.createElement("canvas"); cv.width=W; cv.height=H; const c=cv.getContext("2d"), R=(x,y,w,h,col)=>{ c.fillStyle=col; c.fillRect(x,y,w,h); };
+  const dk=(hex,f=.75)=>{ const n=parseInt(hex.slice(1),16); return `rgb(${(n>>16&255)*f|0},${(n>>8&255)*f|0},${(n&255)*f|0})`; };
+  const top=L.topC||"#d64045", pants=L.pants||"#3a4a6b", skin=L.skin||"#f1c27d", hair=L.hairC||"#3b2414", shoe=L.shoeC||"#1d1b26";
+  R(12,36,7,8,pants); R(21,36,7,8,dk(pants)); R(11,43,8,4,shoe); R(21,43,8,4,dk(shoe,.8));
+  R(9,21,22,16,top); R(24,21,7,16,dk(top)); R(9,21,22,2,dk(top,.9)); R(5,23,5,11,top); R(30,23,5,11,dk(top)); R(5,33,5,3,skin); R(30,33,5,3,dk(skin,.85));
+  if(L.top==="hoodie"){ R(13,19,14,5,dk(top,.85)); R(19,24,2,8,dk(top,.8)); }
+  if(L.extra==="rucksack"){ R(12,22,16,13,L.extraC||"#d64045"); R(12,22,16,2,dk(L.extraC||"#d64045")); R(15,27,10,5,dk(L.extraC||"#d64045",.85)); }
+  if(L.extra==="schal") R(13,19,15,4,L.extraC||"#ffd166");
+  R(17,17,7,5,dk(skin,.9));
+  c.fillStyle=hair; c.beginPath(); c.ellipse(21,11,9.5,9.5,0,0,7); c.fill();
+  R(11,10,3,5,skin); R(11,12,2,2,dk(skin,.85));
+  c.fillStyle=dk(hair,.8); c.beginPath(); c.ellipse(24,13,6,6,0,0,7); c.fill(); c.fillStyle=hair; c.beginPath(); c.ellipse(20,9,7,6,0,0,7); c.fill();
+  if(L.hair==="lang"){ R(12,12,18,13,hair); R(24,14,6,11,dk(hair,.85)); }
+  if(L.hair==="zopf"){ R(19,18,4,8,hair); R(18,25,6,3,dk(hair,.8)); }
+  if(L.hair==="igel"){ [[13,2],[17,0],[21,-1],[25,0],[29,3]].forEach(([x,y])=>{ c.fillStyle=hair; c.beginPath(); c.moveTo(x-3,y+6); c.lineTo(x,y); c.lineTo(x+3,y+6); c.fill(); }); }
+  if(L.hat==="cap"){ c.fillStyle=L.hatC||"#d64045"; c.beginPath(); c.ellipse(21,7,10,6,0,Math.PI,0); c.fill(); R(11,7,20,3,L.hatC||"#d64045"); R(9,8,4,2,dk(L.hatC||"#d64045")); }
+  if(L.hat==="beanie"){ c.fillStyle=L.hatC||"#3a6ea5"; c.beginPath(); c.ellipse(21,7,10,8,0,Math.PI,0); c.fill(); R(11,6,20,4,dk(L.hatC||"#3a6ea5",.85)); R(19,-1,4,3,"#fff"); }
+  if(L.hat==="crown"){ R(13,0,16,5,"#ffd166"); [[13],[19],[25]].forEach(([x])=>R(x,-3,3,3,"#ffd166")); }
+  if(L.hat==="stroh"){ c.fillStyle="#e9c46a"; c.beginPath(); c.ellipse(21,8,14,4,0,0,7); c.fill(); R(14,2,14,6,"#e9c46a"); R(14,6,14,2,"#d64045"); }
+  const img=c.getImageData(0,0,W,H), d=img.data, o=new Uint8ClampedArray(d), a=(x,y)=>x<0||y<0||x>=W||y>=H?0:d[(y*W+x)*4+3];
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++) if(!a(x,y)&&(a(x+1,y)||a(x-1,y)||a(x,y+1)||a(x,y-1))){ const i=(y*W+x)*4; o[i]=29; o[i+1]=27; o[i+2]=38; o[i+3]=255; }
+  c.putImageData(new ImageData(o,W,H),0,0); return backURL.c[k]=cv.toDataURL();
+}
 function startBattle(cfg){
   clearKeys(); mode="battle"; $("#dialog").style.display="none"; dq=null; cfg.enemies.forEach(e=>{ if(!S.dex[e.sp]) S.dex[e.sp]="seen"; }); B={...cfg,ei:0,hint:false,lucky:false}; B.enemies.forEach(e=>{ e.hp=e.hp0||e.maxhp; });
   const fl=$("#flash"); fl.classList.remove("go"); void fl.offsetWidth; fl.classList.add("go");
@@ -1921,6 +1966,7 @@ function startBattle(cfg){
     ["#eSpr","#tSpr","#pSpr"].forEach(s=>{ $(s).style.visibility="hidden"; $(s).className="spr"; }); $("#eBox").style.visibility="hidden"; $("#pBox").style.visibility="hidden"; $("#bText").textContent="";
     updBoxes();
     const e=curE();
+    showSpr($("#pSpr"),backURL(S.look),"inL");
     if(B.tlook){
       showSpr($("#tSpr"),charURL(B.tlook),"inR");
       await bmsg(`${B.trainer} möchte kämpfen!`);
@@ -1932,8 +1978,10 @@ function startBattle(cfg){
       showSpr($("#eSpr"),sprite(e.sp),"inR"); $("#eBox").style.visibility="visible";
       await bmsg(`Ein wildes ${eName(e).toUpperCase()} erscheint!${e.hp<e.maxhp?" Es wirkt schon etwas erschöpft.":""}`);
     }
+    $("#pSpr").classList.add("outL"); await sleep(380);
     showSpr($("#pSpr"),monSpr(true),"inL"); $("#pBox").style.visibility="visible";
     await bmsg(`Los, ${monName()}!`,false);
+    if(!S.flags.kpTip){ S.flags.kpTip=1; await bmsg("Tipp: KP heisst «Kraftpunkte» – das ist die Lebensenergie. Unten rechts siehst du die KP von deinem Zahling, oben links die vom Gegner. Fällt sie auf 0, ist der Zahling erschöpft."); }
     battleLoop();
   },420);
 }
@@ -2299,11 +2347,19 @@ async function evolve(m,to){
   ov.classList.remove("show"); mode="world"; hud(); save();
 }
 async function lose(){
-  const lost=Math.min(20,Math.floor(S.coins*.1)); S.coins-=lost; healAll();
+  const lost=Math.max(0,Math.floor(S.coins*.25)); S.coins-=lost; healAll(); S.stats.go=(S.stats.go||0)+1;
+  await gameOver(lost);
   S.pos={x:AREA.heal.x,y:AREA.heal.y,dir:"down",area:AREA.id}; placePlayer();
   if(BUILD.some(b=>b.id==="stube")) enterRoomDirect("stube",{x:AREA.heal.x,y:AREA.heal.y},[AREA.heal.x,AREA.heal.y-1],null,null,null,true);
-  endBattle(); say("Rechenstube",[`${monName()} war erschöpft … Du wachst in der Rechenstube auf.`,`Du hast ${lost} Münzen verloren. Schau doch mal in dein Fehlerheft!`]);
+  endBattle(); say("Rechenstube",[`Du bist zurück beim Checkpoint: der Rechenstube im Gebiet ${AREA.name}. Dein Team ist wieder fit.`,"Deine Orden und Zahlinge hast du alle noch. Melde dich jetzt bei deiner Lehrperson und schaut zusammen dein Fehlerheft an!"]);
 }
+function gameOver(lost){ return new Promise(res=>{
+  const ov=document.createElement("div"); ov.id="gameover";
+  ov.innerHTML=`<div class="go1">GAME OVER</div><div class="go2">Alle deine Zahlinge sind erschöpft.</div><div class="go3">Du verlierst ${lost} Münzen${S.coins<0?"":""}.</div>
+    <div class="go4">⚑ Zurück zum letzten Checkpoint: Rechenstube im Gebiet ${esc(AREA.name)}</div><div class="go5">Melde dich bei deiner Lehrperson und zeig ihr dein Fehlerheft.</div><div class="go6">Weiter mit Enter</div>`;
+  $("#app").appendChild(ov); sfx("bad");
+  setTimeout(()=>{ const go=e=>{ if(e&&e.type==="keydown"&&!["Enter"," "].includes(e.key)) return; if(e) e.preventDefault(); removeEventListener("keydown",go,true); ov.remove(); res(); }; addEventListener("keydown",go,true); ov.onclick=()=>go(); },1600);
+}); }
 function endBattle(){ $("#battle").classList.remove("show"); $("#scene").classList.remove("task"); BU.state="idle"; B=null; mode="world"; save(); hud(); }
 const WILD=[{sp:"kantling",figs:["rect","square"],w:3},{sp:"kreisel",figs:["circle"],w:3},{sp:"wuerfli",figs:["cube","cuboid"],w:3},{sp:"dreiecko",figs:["triangle"],w:2},{sp:"diagonix",figs:["pyth"],w:1}];
 function wildEncounter(){ const bag=[]; AREA.wild.filter(w=>w.figs.every(geoOK)).forEach(w=>{ for(let i=0;i<w.w;i++) bag.push(w); }); const w=pick(bag); const hp0=Math.random()<.35?Math.round(90*(.45+Math.random()*.4)):90; startBattle({kind:"wild",edmg:18,enemies:[{sp:w.sp,lvl:Math.max(AREA.minLvl||2,S.mon.lvl+ri(-2,1)),maxhp:90,hp0,figs:w.figs}]}); }
@@ -2321,12 +2377,12 @@ function TUTORIAL(){ const z=monName(); return [
   `Für Siege bekommst du Münzen und Erfahrung. ${z} steigt im Level, lernt neue Attacken und entwickelt sich irgendwann sogar!`,
   "Wilde Zahlinge kannst du fangen! Schwäche sie zuerst mit Attacken unter die Hälfte ihrer KP, dann wählst du FANGEN und wirfst ein Würfelnetz. Ob es klappt, ist Glückssache! Manche Zahlinge im Gras sind übrigens schon etwas erschöpft.","Gefangene Zahlinge kommen in dein Team (bis zu vier). Im Zahldex siehst du, welche du schon hast.",
   "Im Laden gibt es Heiltränke, Formel-Rollen, Glücksmünzen, Würfelnetze und coole Kleider. Die Verkäuferin erklärt dir alles.",
-  "In der Rechenstube druckst du dein Fehlerheft aus und ruhst dich auf dem Sofa aus. Herr Emmenegger zeigt dir deinen Lernfortschritt, und Frau Müller hat Formelblätter zu jedem Thema. Zuhause kannst du dich auch im Bett ausruhen.",
+  "In der Rechenstube druckst du dein Fehlerheft aus. Herr Emmenegger zeigt dir deinen Lernfortschritt, und Frau Müller hat Formelblätter zu jedem Thema. Ausruhen und dein Team heilen kannst du zuhause im Bett – unterwegs helfen Heiltränke.",
   "Dein Ziel: Besiege die zwei Trainer auf dem Formenweg und dann Prof. Polygon in der Formen-Arena. In die Arena kommst du erst, wenn deine Lehrperson dein verbessertes Fehlerblatt gesehen und dich freigeschaltet hat!",
   "Steuerung: Pfeiltasten laufen, Enter sprechen und bestätigen, Esc zurück, M öffnet das Menü. Dort findest du auch diese Spielanleitung. Viel Glück!"]; }
 function guide(){
   openPanel(`<h2>Spielanleitung</h2><div class="guide">
-   <h3>Ziel</h3><p>Besiege in jedem Gebiet die zwei Trainer und dann die Arenaleitung. Für jede Arena gibt es einen Orden: Formen-Arena (Geometrie) in Nullingen, Einheiten-Arena im Einheiten-Tal, Dreisatz-Arena auf der Dreisatz-Insel und zum Schluss die Champion-Halle auf dem Champion-Gipfel, wo alle Themen gemischt vorkommen. Ins Tal kommst du zu Fuss, auf die Insel mit dem Boot von Kapitänin Wella und auf den Gipfel mit der Zahnradbahn von Kondukteur Bruno. Wer Champion wird, wird vom Weihnachtsschlitten abgeholt!</p><h3>Heilen</h3><p>Dein Team heilst du auf dem Sofa in der Rechenstube (gibt es in jedem Gebiet) oder zuhause in Nullingen im Bett. In der Rechenstube stehen ausserdem der Computer und der Drucker für dein Fehlerheft. Herr Emmenegger zeigt dir deinen Lernfortschritt, Frau Müller hat Formelblätter zu jedem Thema.</p><h3>Fliehen</h3><p>Vor wilden Zahlingen kannst du gratis fliehen. Vor Trainern kostet es 30 Münzen, in der Arena 50 – auch wenn du dann ins Minus rutschst.</p><h3>Tageszeit und Töne</h3><p>Im Menü (M) stellst du Tag, Abend, Nacht oder «wie draussen» ein. Nachts leuchten die Laternen. Töne kannst du ebenfalls im Menü einschalten.</p>
+   <h3>Ziel</h3><p>Besiege in jedem Gebiet die zwei Trainer und dann die Arenaleitung. Für jede Arena gibt es einen Orden: Formen-Arena (Geometrie) in Nullingen, Einheiten-Arena im Einheiten-Tal, Dreisatz-Arena auf der Dreisatz-Insel und zum Schluss die Champion-Halle auf dem Champion-Gipfel, wo alle Themen gemischt vorkommen. Ins Tal kommst du zu Fuss, auf die Insel mit dem Boot von Kapitänin Wella und auf den Gipfel mit der Zahnradbahn von Kondukteur Bruno. Wer Champion wird, wird vom Weihnachtsschlitten abgeholt!</p><h3>Heilen</h3><p>Dein Team heilst du zuhause in Nullingen im Bett. Unterwegs helfen Heiltränke aus dem Laden – im Kampf über TASCHE oder ausserhalb im Menü unter Team. Nach einem Game over ist dein Team ebenfalls wieder fit. In der Rechenstube steht der Drucker für dein Fehlerheft vorne auf dem Lehrerpult. Herr Emmenegger zeigt dir deinen Lernfortschritt, Frau Müller hat Formelblätter zu jedem Thema.</p><h3>KP und Game over</h3><p>KP heisst Kraftpunkte – die Lebensenergie deines Zahlings. Fällt sie auf 0, ist er erschöpft. Sind alle Zahlinge erschöpft, heisst es GAME OVER: Du verlierst einen Viertel deiner Münzen und startest wieder beim letzten Checkpoint (der Rechenstube im aktuellen Gebiet). Orden und Zahlinge behältst du. Melde dich danach bei deiner Lehrperson. Nach jedem Arenasieg weht deine Fahne auf der Arena – das ist dein Checkpoint.</p><h3>Fliehen</h3><p>Vor wilden Zahlingen kannst du gratis fliehen. Vor Trainern kostet es 30 Münzen, in der Arena 50 – auch wenn du dann ins Minus rutschst.</p><h3>Tageszeit und Töne</h3><p>Im Menü (M) stellst du Tag, Abend, Nacht oder «wie draussen» ein. Nachts leuchten die Laternen. Töne kannst du ebenfalls im Menü einschalten.</p>
    <h3>Kämpfen</h3><p>Wähle KAMPF und eine Attacke. Stufe 1 bringt eine einfache Aufgabe, Stufe 2 eine mittlere, Stufe 3 eine schwierige. Je schwieriger, desto mehr Schaden. Rechnest du richtig, greift dein Zahling an. Danach greift der Gegner an, und du wehrst dich mit einer kurzen Abwehr-Frage (Richtig/Falsch, eine Antwort auswählen oder mehrere ankreuzen). Läuft ein Timer, gibt eine schnelle richtige Antwort einen Volltreffer. Kommas darfst du als Komma oder Punkt schreiben. <b>Ein Taschenrechner ist erlaubt.</b></p>
    <h3>Schwierigkeit</h3><p>Kreise kommen erst nach 8 richtigen Geometrie-Aufgaben, der Satz des Pythagoras nach 12 und Oberflächen nach 20 (nur mit Stufe-3-Attacken). Auf der Dreisatz-Insel kommt der umgekehrte Dreisatz (je mehr, desto weniger) erst nach 10 richtigen Dreisatz-Aufgaben – und in der Arena. Nach drei richtigen Antworten hintereinander wird es automatisch eine Stufe schwieriger. Nach zwei Fehlern hintereinander wird die nächste Aufgabe zum gleichen Thema leichter, und die Formel steht dabei. Stärkere Attacken bringen immer schwierigere Aufgaben.</p>
    <h3>Level, Attacken und Entwicklung</h3><p>Siege bringen Erfahrung (EP). Mit jedem Level wird dein Zahling stärker. Auf Level 7, 10 und 15 lernt dein erster Zahling neue Attacken, auf Level 12 und 20 entwickelt er sich. Auch gefangene Zahlinge entwickeln sich einmal: die vom Formenweg auf Level 16, die aus dem Einheiten-Tal auf Level 20 und die von der Dreisatz-Insel auf Level 24. Dabei lernen sie eine starke Spezialattacke. Erfahrung bekommt immer der vorderste Zahling im Team.</p>
@@ -2337,13 +2393,14 @@ function guide(){
    <div class="col"><button class="btn" data-act="back">Zurück</button></div>`,{name:"guide",onBack:openMenu,onAct:a=>{ if(a==="back") openMenu(); }});
 }
 function teamPanel(msg=""){
-  const row=(m,i,inBox)=>`<div class="item"><img src="${sprite(m.sp)}" style="width:3em;image-rendering:pixelated" alt=""><div class="grow"><b>${MONS[m.sp].name}</b> Lv. ${m.lvl}${!inBox&&i===S.active?' <span class="tag">vorne</span>':""}<br><small>KP ${m.hp}/${m.maxhp} · EP ${m.xp}/${xpNeed(m.lvl)} · ${ATKS[lineOf(m)].filter(a=>a.lv<=m.lvl).map(a=>a.name).join(", ")}</small></div>${inBox?`<button class="btn" data-act="take:${i}" ${S.team.length>=4?"disabled":""}>Ins Team</button>`:`${i!==S.active?`<button class="btn" data-act="front:${i}">Nach vorne</button>`:""}${S.team.length>1&&i!==S.active?`<button class="btn" data-act="box:${i}">In die Box</button>`:""}`}</div>`;
+  const row=(m,i,inBox)=>`<div class="item"><img src="${sprite(m.sp)}" style="width:3em;image-rendering:pixelated" alt=""><div class="grow"><b>${MONS[m.sp].name}</b> Lv. ${m.lvl}${!inBox&&i===S.active?' <span class="tag">vorne</span>':""}<br><small>KP ${m.hp}/${m.maxhp} · EP ${m.xp}/${xpNeed(m.lvl)} · ${ATKS[lineOf(m)].filter(a=>a.lv<=m.lvl).map(a=>a.name).join(", ")}</small></div>${!inBox&&m.hp<m.maxhp&&((S.items.trank||0)+(S.items.supertrank||0))?`<button class="btn" data-act="heal:${i}">Heiltrank geben</button>`:""}${inBox?`<button class="btn" data-act="take:${i}" ${S.team.length>=4?"disabled":""}>Ins Team</button>`:`${i!==S.active?`<button class="btn" data-act="front:${i}">Nach vorne</button>`:""}${S.team.length>1&&i!==S.active?`<button class="btn" data-act="box:${i}">In die Box</button>`:""}`}</div>`;
   openPanel(`<h2>Team</h2><p class="muted">Der vorderste Zahling kämpft zuerst und bekommt die Erfahrung. Höchstens 4 im Team.</p><div class="list">${S.team.map((m,i)=>row(m,i,false)).join("")}</div>
    ${S.box.length?`<h3>Box</h3><div class="list">${S.box.map((m,i)=>row(m,i,true)).join("")}</div>`:""}<p class="msg">${msg}</p><div class="col"><button class="btn" data-act="back">Zurück</button></div>`,{name:"team",onBack:openMenu,onAct:a=>{
     const [c,i]=a.split(":");
     if(c==="back") openMenu();
     if(c==="front"){ S.active=+i; S.mon=S.team[S.active]; save(); hud(); teamPanel(`${monName()} kämpft jetzt zuerst.`); }
     if(c==="box"){ const m=S.team.splice(+i,1)[0]; S.box.push(m); S.active=S.team.indexOf(S.mon); save(); teamPanel(`${MONS[m.sp].name} ist jetzt in der Box.`); }
+    if(c==="heal"){ const m=S.team[+i], id=(S.items.trank||0)?"trank":"supertrank", h=id==="trank"?50:120, old=m.hp; S.items[id]--; m.hp=Math.min(m.maxhp,m.hp+h); save(); hud(); return teamPanel(`${MONS[m.sp].name} erhält ${m.hp-old} KP zurück.`); }
     if(c==="take"){ const m=S.box.splice(+i,1)[0]; S.team.push(m); save(); teamPanel(`${MONS[m.sp].name} ist jetzt im Team.`); }
   }});
 }
@@ -2590,7 +2647,7 @@ function setNet(st){ const el=$("#hNet"); if(!ONLINE||!SESSION){ el.style.displa
 const plain=k=>k==="hc"?"h_c":k;
 function summary(){
   const m=S.mon||{lvl:0,sp:"flammli"};
-  return {nick:S.name,mon:S.mon?MONS[m.sp].name:"",lvl:m.lvl,coins:S.coins,badges:S.badges.length,badgeIds:S.badges,caught:Object.values(S.dex).filter(v=>v==="caught").length,finale:!!S.flags.finaleDone,unlocked:Object.keys(S.unlocked||{}).filter(k=>S.unlocked[k]),correct:S.stats.correct,wrong:S.stats.wrong,open:openErrs().length,printed:openErrs().filter(e=>e.printed).length,
+  return {nick:S.name,mon:S.mon?MONS[m.sp].name:"",lvl:m.lvl,coins:S.coins,badges:S.badges.length,badgeIds:S.badges,caught:Object.values(S.dex).filter(v=>v==="caught").length,finale:!!S.flags.finaleDone,unlocked:Object.keys(S.unlocked||{}).filter(k=>S.unlocked[k]),correct:S.stats.correct,wrong:S.stats.wrong,go:S.stats.go||0,open:openErrs().length,printed:openErrs().filter(e=>e.printed).length,
     team:S.team.map(x=>`${MONS[x.sp].name} Lv. ${x.lvl}`),
     errs:openErrs().slice(-25).map(e=>{ if(isU(e)) return {txt:taskPlain(e),user:e.user,ans:`${fa(e)} ${unitOf(e)}`,printed:!!e.printed}; const F=FIGS[e.fig]; return {txt:`${F.name}: ${e.given.map(k=>`${plain(k)} = ${f(e.vals[k])} ${F.units[k]}`).join(", ")} → gesucht ${plain(e.ask)}`,user:e.user,ans:`${f(e.answer)} ${F.units[e.ask]}`,printed:!!e.printed}; })};
 }
